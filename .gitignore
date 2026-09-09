@@ -1,0 +1,44 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# ASP.NET Core / .NET
+*.pdb
+*.cache
+*.dll
+*.exe
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Local secrets / environment
+appsettings.*.local.json
+*.env
+.env
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+.nuget/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
