@@ -16,7 +16,7 @@ namespace Backend
             _context = context;
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> Create(CreateAccountRequest request)
         {
             bool usernameTaken = await _context.Accounts.AnyAsync(a => a.Username == request.Username);
@@ -39,6 +39,18 @@ namespace Backend
                 return Unauthorized("Invalid username or password.");
 
             return Ok(account);
+        }
+
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var account = await _context.Accounts.FindAsync(id);
+            if (account is null) return NotFound();
+
+            _context.Accounts.Remove(account);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

@@ -1,6 +1,22 @@
 @Backend_HostAddress = http://localhost:5108
 
-GET {{Backend_HostAddress}}/weatherforecast/
-Accept: application/json
+### Create account
+POST {{Backend_HostAddress}}/Api/Accounts/create
+Content-Type: application/json
 
-###
+{
+  "username": "karolis123",
+  "password": "test1234"
+}
+
+### Login
+POST {{Backend_HostAddress}}/Api/Accounts/login
+Content-Type: application/json
+
+{
+  "username": "karolis123",
+  "password": "test1234"
+}
+
+### Delete account
+DELETE {{Backend_HostAddress}}/Api/Accounts/delete/4
