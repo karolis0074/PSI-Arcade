@@ -25,8 +25,8 @@ namespace Backend
 
         private string GenerateToken(Account account)
         {
-            var claims = new[] { 
-                new Claim(ClaimTypes.NameIdentifier, account.Id.ToString()) 
+            var claims = new[] {
+                new Claim(ClaimTypes.NameIdentifier, account.Id.ToString())
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -42,7 +42,7 @@ namespace Backend
         }
 
         private int GetCallerId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        
+
 
         [HttpPost("create")]
         public async Task<IActionResult> Create(CreateAccountRequest request)
@@ -67,14 +67,40 @@ namespace Backend
             if (account is null || !account.VerifyPassword(request.Password))
                 return Unauthorized("Invalid username or password.");
 
-            return Ok(new { token = GenerateToken(account), account } );
+            return Ok(new { token = GenerateToken(account), account });
         }
 
         [Authorize]
-        [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpPost("changepass")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
         {
-            if (id != GetCallerId()) return Forbid();
+            int id = GetCallerId();
+
+            var account = await _context.Accounts.FindAsync(id);
+            if (account is null) return NotFound();
+
+            switch (account.ChangePassword(request.OldPassword, request.NewPassword))
+            {
+                case 0:
+                    await _context.SaveChangesAsync();
+                    return Ok();
+
+                case 1:
+                    return Unauthorized("Old password is invalid.");
+
+                case 2:
+                    return BadRequest("New password is invalid.");
+
+                default:
+                    return BadRequest();
+            }
+        }
+
+        [Authorize]
+        [HttpDelete("delete")]
+        public async Task<IActionResult> Delete()
+        {
+            int id = GetCallerId();
 
             var account = await _context.Accounts.FindAsync(id);
             if (account is null) return NotFound();

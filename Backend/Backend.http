@@ -1,4 +1,5 @@
 @Backend_HostAddress = http://localhost:5108
+@Login_Token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJleHAiOjE3ODkwMjc4MTMsImlzcyI6IlRva2VuQXJjYWRlIiwiYXVkIjoiVG9rZW5BcmNhZGUifQ.sBfyHlrR1IW4b5fHwdAnwVrJMVHVn86zSSUlrBACCDM
 
 ### Create account
 POST {{Backend_HostAddress}}/Api/Accounts/create
@@ -18,6 +19,16 @@ Content-Type: application/json
   "password": "test1234"
 }
 
+### Change Password
+POST {{Backend_HostAddress}}/Api/Accounts/changepass
+Content-Type: application/json
+Authorization: Bearer {{Login_Token}}
+
+{
+  "oldpassword": "test1234",
+  "newpassword": "TEST4321"
+}
+
 ### Delete account
-DELETE {{Backend_HostAddress}}/Api/Accounts/delete/5
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjUiLCJleHAiOjE3ODg5NzEzNjEsImlzcyI6IlRva2VuQXJjYWRlIiwiYXVkIjoiVG9rZW5BcmNhZGUifQ.yypj5DyU_FErFL2FIrWSQuIjYAczTs-HqLI-So0tZf8
+DELETE {{Backend_HostAddress}}/Api/Accounts/delete
+Authorization: Bearer {{Login_Token}}

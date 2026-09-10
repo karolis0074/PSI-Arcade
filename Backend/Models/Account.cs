@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.Json.Serialization;
 
 namespace Backend
@@ -16,12 +18,12 @@ namespace Backend
         public Account(string username, string password)
         {
             if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Username is required.", nameof(username));
+            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Password is required.", nameof(username));
 
             this.Username = username;
             this.Balance = 5000;
 
-            var hasher = new PasswordHasher<Account>();
-            PasswordHash = hasher.HashPassword(this, password);
+            SetPassword(password);
         }
 
         public bool TrySpend(int amount)
@@ -47,6 +49,24 @@ namespace Backend
             var hasher = new PasswordHasher<Account>();
             var result = hasher.VerifyHashedPassword(this, PasswordHash, password);
             return result == PasswordVerificationResult.Success;
+        }
+
+        public int ChangePassword(string oldPassword, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword)) return 2; // Invalid new password ret code
+
+            if (VerifyPassword(oldPassword))
+            {
+                SetPassword(newPassword);
+                return 0; // success ret code
+            }
+            return 1; // invalid old password ret code
+        }
+
+        private void SetPassword(string password)
+        {
+            var hasher = new PasswordHasher<Account>();
+            PasswordHash = hasher.HashPassword(this, password);
         }
 
         public override string ToString() => $"{Username}: {Balance} tokens";

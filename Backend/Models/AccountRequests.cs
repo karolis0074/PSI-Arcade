@@ -11,4 +11,9 @@ namespace Backend.Models
         [Required] string Username,
         [Required] string Password
     );
+
+    public record ChangePasswordRequest(
+        [Required] string OldPassword,
+        [Required] string NewPassword
+    );
 }
