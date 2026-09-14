@@ -13,10 +13,7 @@
         {
             if (String.IsNullOrWhiteSpace(username) || 
                 String.IsNullOrWhiteSpace(password))
-            throw new ArgumentNullException("Account username or password is invalid.");
-
-            if (Database.GetInstance().GetAccount(username) != null)
-                throw new ArgumentException("Username is taken.");
+                throw new ArgumentNullException("Account username or password is invalid.");
 
             this.DisplayName = displayName;
             this.Username = username;

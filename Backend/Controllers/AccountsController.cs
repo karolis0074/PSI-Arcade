@@ -11,13 +11,12 @@ namespace Backend.Controllers
         [HttpPost("register")]
         public IActionResult Register(RegisterRequest request)
         {
-            int returnCode = DB.AddAccount(
-                new Account(
+            Account account = new Account(
                     request.DisplayName,
                     request.Username,
                     request.Password
-                )
             );
+            int returnCode = DB.AddAccount(account);
 
             switch (returnCode)
             {
@@ -75,7 +74,7 @@ namespace Backend.Controllers
         public IActionResult DeleteAccount(LoginRequest request)
         {
             Account account = DB.GetAccount(request.Username);
-            if (account == null || account.CheckPassword(request.Password))
+            if (account == null || !account.CheckPassword(request.Password))
                 return Unauthorized();
 
             if (DB.DeleteAccount(request.Username) == 0)

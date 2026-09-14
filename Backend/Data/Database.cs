@@ -33,10 +33,10 @@ namespace Backend
 
         public int AddAccount(Account account)
         {
-            if (accounts.Contains(account))
-                return 1;
             if (account == null)
                 return 2;
+            if (GetAccount(account.Username) != null)
+                return 1;
 
             accounts.Add(account);
             return 0;
