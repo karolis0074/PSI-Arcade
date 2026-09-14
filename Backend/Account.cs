@@ -14,28 +14,46 @@
                 String.IsNullOrWhiteSpace(password))
             throw new ArgumentNullException("Account username or password is invalid.");
 
+            if (Database.GetInstance().GetAccount(username) != null)
+                throw new ArgumentException("Username is taken.");
+
             this.Username = username;
             this.Balance = 5000;
 
             this.password = password;
-            
         }
 
-        public bool SetUsername(String username)
+        public int SetUsername(String newUsername)
         {
-            if (String.IsNullOrWhiteSpace(username))
-                return false;
+            if (String.IsNullOrWhiteSpace(newUsername))
+                return 2;  // invalid username
+            if (Database.GetInstance().GetAccount(Username) != null)
+                return 1;  // user already exists
 
-            this.Username = username;
-            return true;
+            Username = newUsername;
+            return 0;
         }
 
-        public bool ChangePassword(String oldPassword, String newPassword)
+        public int ChangePassword(String oldPassword, String newPassword)
         {
-            if (String.IsNullOrWhiteSpace(newPassword) || !oldPassword.Equals(newPassword))
-                return false;
+            if (String.IsNullOrWhiteSpace(newPassword))
+                return 2; // invalid new password
+            if (!oldPassword.Equals(password))
+                return 1; // incorrect current password
+
             password = newPassword;
+            return 0;
+        }
+
+        public bool TrySpend(int amount)
+        {
+            if (Balance < amount)
+                return false;
+
+            Balance -= amount;
             return true;
         }
+
+        public void AddFunds(int amount) => Balance += amount;
     }
 }
