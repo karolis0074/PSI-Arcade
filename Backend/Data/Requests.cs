@@ -3,9 +3,17 @@
 namespace Backend
 {
     public record RegisterRequest(
-        [Required] string DisplayName,
-        [Required] string Username,
-        [Required] string Password
+        [Required]
+        [StringLength(20, MinimumLength = 3)] 
+        string DisplayName,
+
+        [Required]
+        [StringLength(20, MinimumLength = 3)] 
+        string Username,
+
+        [Required]
+        [StringLength(30, MinimumLength = 8)] 
+        string Password
     );
 
     public record LoginRequest(
@@ -16,6 +24,9 @@ namespace Backend
     public record ChangePasswordRequest(
         [Required] string Username,
         [Required] string OldPassword,
-        [Required] string NewPassword
+
+        [Required]
+        [StringLength(20, MinimumLength = 3)] 
+        string NewPassword
     );
 }

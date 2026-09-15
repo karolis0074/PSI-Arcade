@@ -42,17 +42,31 @@
             return 0;
         }
 
-        public bool CheckPassword(String password) => password.Equals(this.password);
+        public bool CheckPassword(String password)
+        {
+            if (password == null || this.password == null)
+                return false;
+
+            return password.Equals(this.password);
+        }
 
         public bool TrySpend(int amount)
         {
-            if (Balance < amount)
+            if (Balance < amount || amount < 0)
                 return false;
 
             Balance -= amount;
             return true;
         }
 
-        public void AddFunds(int amount) => Balance += amount;
+        public bool AddFunds(int amount)
+        {
+            if (amount < 0)
+                return false;
+
+            Balance += amount;
+            return true;
+        }
+            
     }
 }
