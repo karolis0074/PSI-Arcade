@@ -1,6 +1,40 @@
-@Backend_HostAddress = http://localhost:5108
+@HostAddress = http://localhost:5108
 
-GET {{Backend_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register
+POST {{HostAddress}}/Accounts/register
+Content-Type: application/json
 
+{
+  "displayName": "Karolis",
+  "username": "karolis123",
+  "password": "test1234"
+}
+
+### Login
+POST {{HostAddress}}/Accounts/login
+Content-Type: application/json
+
+{
+  "username": "karolis123",
+  "password": "test1234"
+}
+
+### Change password
+POST {{HostAddress}}/Accounts/changepass
+Content-Type: application/json
+
+{
+  "username": "karolis123",
+  "oldPassword": "test1234",
+  "newPassword": "newPassword1"
+}
+
+### Delete account
+DELETE {{HostAddress}}/Accounts/delete
+Content-Type: application/json
+
+{
+  "username": "karolis123",
+  "password": "newPassword1"
+}
 ###
