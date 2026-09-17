@@ -86,16 +86,15 @@ namespace Backend.Controllers
         [HttpPost("changepass")]
         public IActionResult ChangePassword(ChangePasswordRequest request)
         {
+            if (!_authService.CheckLogin(request.Username, request.OldPassword))
+                return Unauthorized();
 
-            int returnCode = _accountService.ChangePassword(request.Username, request.OldPassword, request.NewPassword);
+            int returnCode = _accountService.ChangePassword(request.Username, request.NewPassword);
 
             switch (returnCode)
             {
                 case 0:
                     return Ok();
-
-                case 1:
-                    return Unauthorized();
 
                 case 2:
                     return BadRequest();

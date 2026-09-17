@@ -25,22 +25,20 @@ namespace SportMatch.API.Utils
             return _db.AddAccount(account); // 0 ok, 1 conflict, 2 bad
         }
 
-        public int ChangePassword(Account account, string oldPassword, string newPassword)
+        public int ChangePassword(Account account, string newPassword)
         {
             
-            if (String.IsNullOrWhiteSpace(newPassword) || String.IsNullOrWhiteSpace(oldPassword))
+            if (String.IsNullOrWhiteSpace(newPassword))
                 return 2; // bad request
-            if (account == null || _auth.CheckLogin(account, oldPassword))
-                return 1; // unauthorized
 
             account.Password = newPassword;
             return 0; // ok
         }
 
-        public int ChangePassword(string username, string oldPassword, string newPassword)
+        public int ChangePassword(string username, string newPassword)
         {
             var account = _db.GetAccount(username);
-            return ChangePassword(account, oldPassword, newPassword);
+            return ChangePassword(account, newPassword);
         }
 
         public int ChangeDisplayName(Account account, string newName)
