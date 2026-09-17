@@ -2,6 +2,9 @@
 
 namespace Backend
 {
+    public record UserDataRequest(
+        [Required] string Username
+    );
     public record RegisterRequest(
         [Required]
         [StringLength(20, MinimumLength = 3)] 
@@ -28,5 +31,14 @@ namespace Backend
         [Required]
         [StringLength(20, MinimumLength = 3)] 
         string NewPassword
+    );
+
+    public record ChangeDisplayNameRequest(
+        [Required] string Username,
+        [Required] string Password,
+
+        [Required]
+        [StringLength(20, MinimumLength = 3)]
+        string NewName
     );
 }

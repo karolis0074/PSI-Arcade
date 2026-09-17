@@ -21,7 +21,7 @@ namespace Backend
             return instance;
         }
 
-        public Account GetAccount(string username)
+        public Account? GetAccount(string username)
         {
             foreach (Account account in accounts)
             {
@@ -45,7 +45,7 @@ namespace Backend
         public int DeleteAccount(string username)
         {
             Account account = GetAccount(username);
-            if (!accounts.Remove(account))
+            if (account == null || !accounts.Remove(account))
                 return 1;
 
             return 0;

@@ -1,5 +1,12 @@
 @HostAddress = http://localhost:5108
 
+### Get display name
+GET {{HostAddress}}/Accounts/getname
+Content-Type: application/json
+{
+  "username": "karolis123"
+}
+
 ### Register
 POST {{HostAddress}}/Accounts/register
 Content-Type: application/json
@@ -17,6 +24,16 @@ Content-Type: application/json
 {
   "username": "karolis123",
   "password": "test1234"
+}
+
+### Change display name
+POST {{HostAddress}}/Accounts/changename
+Content-Type: application/json
+
+{
+  "username": "karolis123",
+  "password": "test1234",
+  "newName": "Karolis"
 }
 
 ### Change password

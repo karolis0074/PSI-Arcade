@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SportMatch.API.Utils;
 
 namespace Backend.Controllers
 {
@@ -6,17 +7,28 @@ namespace Backend.Controllers
     [Route("[controller]")]
     public class AccountsController : ControllerBase
     {
-        Database DB = Database.GetInstance();
+        private Database _db = Database.GetInstance();
+        private AccountService _accountService = new AccountService();
+        private AuthService _authService = new AuthService();
+
+        [HttpGet("getname")]
+        public IActionResult GetDisplayName(UserDataRequest request)
+        {
+            var account = _db.GetAccount(request.Username);
+            if (account == null)
+                return NotFound();
+
+            return Ok(new { account.DisplayName });
+        }
 
         [HttpPost("register")]
         public IActionResult Register(RegisterRequest request)
         {
-            Account account = new Account(
-                    request.DisplayName,
-                    request.Username,
-                    request.Password
+            int returnCode = _accountService.Register(
+                request.DisplayName,
+                request.Username,
+                request.Password
             );
-            int returnCode = DB.AddAccount(account);
 
             switch (returnCode)
             {
@@ -37,33 +49,56 @@ namespace Backend.Controllers
         [HttpPost("login")]
         public IActionResult Login(LoginRequest request)
         {
-            Account account = DB.GetAccount(request.Username);
-            if (account == null || !account.CheckPassword(request.Password))
-                return Unauthorized();
+            if (_authService.CheckLogin(request.Username, request.Password))
+            {
+                // later need to implement tokens/cookies so user can actually
+                // log in and be authorized to do other actions
+                return Ok();
+            }
 
-            // later need to implement tokens/cookies so user can actually
-            // log in and be authorized to do other actions
-            return Ok();
+            return Unauthorized();
         }
 
-        [HttpPost("changepass")]
-        public IActionResult ChangePassword(ChangePasswordRequest request)
+        [HttpPost("changename")]
+        public IActionResult ChangeDisplayName(ChangeDisplayNameRequest request)
         {
-            Account account = DB.GetAccount(request.Username);
-            if (account == null)
+            if (!_authService.CheckLogin(request.Username, request.Password))
                 return Unauthorized();
 
-            int returnCode = account.ChangePassword(request.OldPassword, request.NewPassword);
+            int returnCode = _accountService.ChangeDisplayName(request.Username, request.NewName);
+
             switch (returnCode)
             {
                 case 0:
                     return Ok();
 
                 case 1:
-                    return Unauthorized(); // incorrect old password
+                    return NotFound();
 
                 case 2:
-                    return BadRequest(); // new password is invalid
+                    return BadRequest();
+
+                default:
+                    return StatusCode(500);
+            }
+        }
+
+        [HttpPost("changepass")]
+        public IActionResult ChangePassword(ChangePasswordRequest request)
+        {
+
+            int returnCode = _accountService.ChangePassword(request.Username, request.OldPassword, request.NewPassword);
+
+            switch (returnCode)
+            {
+                case 0:
+                    return Ok();
+
+                case 1:
+                    return Unauthorized();
+
+                case 2:
+                    return BadRequest();
 
                 default:
                     return StatusCode(500);
@@ -73,14 +108,22 @@ namespace Backend.Controllers
         [HttpDelete("delete")]
         public IActionResult DeleteAccount(LoginRequest request)
         {
-            Account account = DB.GetAccount(request.Username);
-            if (account == null || !account.CheckPassword(request.Password))
+            if (!_authService.CheckLogin(request.Username, request.Password))
                 return Unauthorized();
 
-            if (DB.DeleteAccount(request.Username) == 0)
-                return Ok();
+            int returnCode = _db.DeleteAccount(request.Username);
+            
+            switch (returnCode)
+            {
+                case 0:
+                    return Ok();
 
-            return StatusCode(500);
+                case 1:
+                    return NotFound();
+
+                default:
+                    return StatusCode(500);
+            }
         }
     }
 }
