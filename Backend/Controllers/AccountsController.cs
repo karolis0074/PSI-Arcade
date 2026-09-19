@@ -1,114 +1,128 @@
-﻿using Backend.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿using Microsoft.AspNetCore.Mvc;
+using SportMatch.API.Utils;
 
-namespace Backend
+namespace Backend.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("[controller]")]
     public class AccountsController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly IConfiguration _config;
+        private Database _db = Database.GetInstance();
+        private AccountService _accountService = new AccountService();
+        private AuthService _authService = new AuthService();
 
-        public AccountsController(AppDbContext context, IConfiguration config)
+        [HttpGet("getname")]
+        public IActionResult GetDisplayName(UserDataRequest request)
         {
-            _context = context;
-            _config = config;
+            var account = _db.GetAccount(request.Username);
+            if (account == null)
+                return NotFound();
+
+            return Ok(new { account.DisplayName });
         }
 
-        private string GenerateToken(Account account)
+        [HttpPost("register")]
+        public IActionResult Register(RegisterRequest request)
         {
-            var claims = new[] {
-                new Claim(ClaimTypes.NameIdentifier, account.Id.ToString())
-            };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            int returnCode = _accountService.Register(
+                request.DisplayName,
+                request.Username,
+                request.Password
+            );
 
-            var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(2),
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private int GetCallerId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
-
-        [HttpPost("create")]
-        public async Task<IActionResult> Create(CreateAccountRequest request)
-        {
-            bool usernameTaken = await _context.Accounts.AnyAsync(a => a.Username == request.Username);
-            if (usernameTaken)
-                return Conflict($"Username '{request.Username}' is already taken.");
-
-            var account = new Account(request.Username, request.Password);
-            _context.Accounts.Add(account);
-            await _context.SaveChangesAsync();
-
-            return Ok(account);
-        }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginRequest request)
-        {
-
-            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Username == request.Username);
-
-            if (account is null || !account.VerifyPassword(request.Password))
-                return Unauthorized("Invalid username or password.");
-
-            return Ok(new { token = GenerateToken(account), account });
-        }
-
-        [Authorize]
-        [HttpPost("changepass")]
-        public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
-        {
-            int id = GetCallerId();
-
-            var account = await _context.Accounts.FindAsync(id);
-            if (account is null) return NotFound();
-
-            switch (account.ChangePassword(request.OldPassword, request.NewPassword))
+            switch (returnCode)
             {
                 case 0:
-                    await _context.SaveChangesAsync();
                     return Ok();
 
                 case 1:
-                    return Unauthorized("Old password is invalid.");
+                    return Conflict(); // user already exists
 
                 case 2:
-                    return BadRequest("New password is invalid.");
+                    return BadRequest(); // account could not be created
 
                 default:
-                    return BadRequest();
+                    return StatusCode(500);
             }
         }
 
-        [Authorize]
-        [HttpDelete("delete")]
-        public async Task<IActionResult> Delete()
+        [HttpPost("login")]
+        public IActionResult Login(LoginRequest request)
         {
-            int id = GetCallerId();
+            if (_authService.CheckLogin(request.Username, request.Password))
+            {
+                // later need to implement tokens/cookies so user can actually
+                // log in and be authorized to do other actions
+                return Ok();
+            }
 
-            var account = await _context.Accounts.FindAsync(id);
-            if (account is null) return NotFound();
+            return Unauthorized();
+        }
 
-            _context.Accounts.Remove(account);
-            await _context.SaveChangesAsync();
+        [HttpPost("changename")]
+        public IActionResult ChangeDisplayName(ChangeDisplayNameRequest request)
+        {
+            if (!_authService.CheckLogin(request.Username, request.Password))
+                return Unauthorized();
 
-            return NoContent();
+            int returnCode = _accountService.ChangeDisplayName(request.Username, request.NewName);
+
+            switch (returnCode)
+            {
+                case 0:
+                    return Ok();
+
+                case 1:
+                    return NotFound();
+
+                case 2:
+                    return BadRequest();
+
+                default:
+                    return StatusCode(500);
+            }
+        }
+
+        [HttpPost("changepass")]
+        public IActionResult ChangePassword(ChangePasswordRequest request)
+        {
+            if (!_authService.CheckLogin(request.Username, request.OldPassword))
+                return Unauthorized();
+
+            int returnCode = _accountService.ChangePassword(request.Username, request.NewPassword);
+
+            switch (returnCode)
+            {
+                case 0:
+                    return Ok();
+
+                case 2:
+                    return BadRequest();
+
+                default:
+                    return StatusCode(500);
+            }
+        }
+
+        [HttpDelete("delete")]
+        public IActionResult DeleteAccount(LoginRequest request)
+        {
+            if (!_authService.CheckLogin(request.Username, request.Password))
+                return Unauthorized();
+
+            int returnCode = _db.DeleteAccount(request.Username);
+            
+            switch (returnCode)
+            {
+                case 0:
+                    return Ok();
+
+                case 1:
+                    return NotFound();
+
+                default:
+                    return StatusCode(500);
+            }
         }
     }
 }
