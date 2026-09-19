@@ -21,15 +21,22 @@ namespace SportMatch.API.Utils
 
         public int Register(string displayName, string username, string password)
         {
+            if (String.IsNullOrWhiteSpace(displayName) ||
+            String.IsNullOrWhiteSpace(username) ||
+            String.IsNullOrWhiteSpace(password))
+                return 2;
+
             var account = new Account(displayName, username, password);
-            return _db.AddAccount(account); // 0 ok, 1 conflict, 2 bad
+            return _db.AddAccount(account);
         }
 
-        public int ChangePassword(Account account, string newPassword)
+        public int ChangePassword(Account? account, string newPassword)
         {
             
             if (String.IsNullOrWhiteSpace(newPassword))
                 return 2; // bad request
+            if (account == null)
+                return 1; // not found
 
             account.Password = newPassword;
             return 0; // ok

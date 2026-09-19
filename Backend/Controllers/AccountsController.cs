@@ -12,9 +12,9 @@ namespace Backend.Controllers
         private AuthService _authService = new AuthService();
 
         [HttpGet("getname")]
-        public IActionResult GetDisplayName(UserDataRequest request)
+        public IActionResult GetDisplayName([FromQuery] string username)
         {
-            var account = _db.GetAccount(request.Username);
+            var account = _db.GetAccount(username);
             if (account == null)
                 return NotFound();
 

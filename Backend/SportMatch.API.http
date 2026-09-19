@@ -1,11 +1,7 @@
 @HostAddress = http://localhost:5108
 
 ### Get display name
-GET {{HostAddress}}/Accounts/getname
-Content-Type: application/json
-{
-  "username": "karolis123"
-}
+GET {{HostAddress}}/Accounts/getname?username=karolis123
 
 ### Register
 POST {{HostAddress}}/Accounts/register
