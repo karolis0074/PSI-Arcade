@@ -1,6 +1,6 @@
-using Backend;
+﻿using Backend;
 
-namespace Backend.Utils
+namespace SportMatch.API.Utils
 {
     public class AccountService
     {
@@ -13,10 +13,10 @@ namespace Backend.Utils
             _auth = new AuthService();
         }
 
-        public AccountService(Database db, TokenService tokens)
+        public AccountService(Database db)
         {
             _db = db;
-            _auth = new AuthService(db, tokens);
+            _auth = new AuthService(db);
         }
 
         public int Register(string displayName, string username, string password)
@@ -32,13 +32,13 @@ namespace Backend.Utils
 
         public int ChangePassword(Account? account, string newPassword)
         {
-
+            
             if (String.IsNullOrWhiteSpace(newPassword))
                 return 2; // bad request
             if (account == null)
                 return 1; // not found
 
-            account.SetPassword(newPassword);
+            account.Password = newPassword;
             return 0; // ok
         }
 

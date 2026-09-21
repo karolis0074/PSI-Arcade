@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
-using Backend.Utils;
+﻿using Microsoft.AspNetCore.Mvc;
+using SportMatch.API.Utils;
 
 namespace Backend.Controllers
 {
@@ -8,24 +8,8 @@ namespace Backend.Controllers
     public class AccountsController : ControllerBase
     {
         private Database _db = Database.GetInstance();
-        private TokenService _tokens = TokenService.GetInstance();
-        private AccountService _accountService;
-        private AuthService _authService;
-
-        public AccountsController()
-        {
-            _accountService = new AccountService(_db, _tokens);
-            _authService = new AuthService(_db, _tokens);
-        }
-
-        private string? GetBearerToken()
-        {
-            string? header = Request.Headers.Authorization.ToString();
-            if (String.IsNullOrWhiteSpace(header) || !header.StartsWith("Bearer "))
-                return null;
-
-            return header["Bearer ".Length..];
-        }
+        private AccountService _accountService = new AccountService();
+        private AuthService _authService = new AuthService();
 
         [HttpGet("getname")]
         public IActionResult GetDisplayName([FromQuery] string username)
@@ -65,29 +49,23 @@ namespace Backend.Controllers
         [HttpPost("login")]
         public IActionResult Login(LoginRequest request)
         {
-            if (!_authService.CheckLogin(request.Username, request.Password))
-                return Unauthorized();
+            if (_authService.CheckLogin(request.Username, request.Password))
+            {
+                // later need to implement tokens/cookies so user can actually
+                // log in and be authorized to do other actions
+                return Ok();
+            }
 
-            var account = _db.GetAccount(request.Username)!;
-            var token = _authService.IssueToken(account);
-            return Ok(new { token });
-        }
-
-        [HttpPost("logout")]
-        public IActionResult Logout()
-        {
-            _authService.RevokeToken(GetBearerToken());
-            return Ok();
+            return Unauthorized();
         }
 
         [HttpPost("changename")]
         public IActionResult ChangeDisplayName(ChangeDisplayNameRequest request)
         {
-            var account = _authService.AuthenticateToken(GetBearerToken());
-            if (account == null)
+            if (!_authService.CheckLogin(request.Username, request.Password))
                 return Unauthorized();
 
-            int returnCode = _accountService.ChangeDisplayName(account, request.NewName);
+            int returnCode = _accountService.ChangeDisplayName(request.Username, request.NewName);
 
             switch (returnCode)
             {
@@ -108,11 +86,10 @@ namespace Backend.Controllers
         [HttpPost("changepass")]
         public IActionResult ChangePassword(ChangePasswordRequest request)
         {
-            var account = _authService.AuthenticateToken(GetBearerToken());
-            if (account == null || !_authService.CheckLogin(account, request.OldPassword))
+            if (!_authService.CheckLogin(request.Username, request.OldPassword))
                 return Unauthorized();
 
-            int returnCode = _accountService.ChangePassword(account, request.NewPassword);
+            int returnCode = _accountService.ChangePassword(request.Username, request.NewPassword);
 
             switch (returnCode)
             {
@@ -128,18 +105,16 @@ namespace Backend.Controllers
         }
 
         [HttpDelete("delete")]
-        public IActionResult DeleteAccount()
+        public IActionResult DeleteAccount(LoginRequest request)
         {
-            var account = _authService.AuthenticateToken(GetBearerToken());
-            if (account == null)
+            if (!_authService.CheckLogin(request.Username, request.Password))
                 return Unauthorized();
 
-            int returnCode = _db.DeleteAccount(account.Username);
-
+            int returnCode = _db.DeleteAccount(request.Username);
+            
             switch (returnCode)
             {
                 case 0:
-                    _authService.RevokeToken(GetBearerToken());
                     return Ok();
 
                 case 1:

@@ -1,6 +1,4 @@
-﻿using Backend.Utils;
-
-namespace Backend
+﻿namespace Backend
 {
     public class Account
     {
@@ -8,11 +6,12 @@ namespace Backend
         public String Username { get; private set; }
         public int Balance { get; private set; }
 
-        internal String PasswordHash { get; private set; }
+        internal String Password; // currently stored raw, will be hashed in the future
+        
 
         public Account(String displayName, String username, String password)
         {
-            if (String.IsNullOrWhiteSpace(username) ||
+            if (String.IsNullOrWhiteSpace(username) || 
                 String.IsNullOrWhiteSpace(password))
                 throw new ArgumentNullException("Account username or password is invalid.");
 
@@ -20,17 +19,7 @@ namespace Backend
             this.Username = username;
             this.Balance = 5000;
 
-            this.PasswordHash = PasswordHasher.Hash(password);
-        }
-
-        public bool VerifyPassword(String password)
-        {
-            return PasswordHasher.Verify(password, PasswordHash);
-        }
-
-        public void SetPassword(String password)
-        {
-            PasswordHash = PasswordHasher.Hash(password);
+            this.Password = password;
         }
 
         public bool TrySpend(int amount)
