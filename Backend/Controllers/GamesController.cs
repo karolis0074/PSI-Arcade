@@ -9,14 +9,16 @@ public class GamesController : ControllerBase
 {
     private readonly GameStore _store = new();
 
-    [HttpGet]
+    // GET /games/getall
+    [HttpGet("getall")]
     public IActionResult GetAll()
     {
         return Ok(_store.GetAll());
     }
 
-    [HttpGet("{id}")]
-    public IActionResult GetById(int id)
+    // GET /games/get?id=1
+    [HttpGet("get")]
+    public IActionResult GetById([FromQuery] int id)
     {
         var game = _store.GetById(id);
 
@@ -26,14 +28,15 @@ public class GamesController : ControllerBase
         return Ok(game);
     }
 
-    [HttpPost]
+    // POST /games/create
+    [HttpPost("create")]
     public IActionResult Create(Game game)
     {
-        //game must have at least 1 player slot.
+        // game must have at least 1 player slot.
         if (game.MaxPlayers <= 0)
             return BadRequest("MaxPlayers must be greater than 0");
 
-        //users cannot create games in the past.
+        // users cannot create games in the past.
         if (game.StartTime <= DateTime.UtcNow)
             return BadRequest("StartTime must be in the future");
 
@@ -41,8 +44,9 @@ public class GamesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    // DELETE /games/delete?id=1
+    [HttpDelete("delete")]
+    public IActionResult Delete([FromQuery] int id)
     {
         var success = _store.Delete(id);
 

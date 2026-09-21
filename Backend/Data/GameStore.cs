@@ -3,7 +3,7 @@ namespace Backend.Data;
 public class GameStore
 {
     // Static storage so data persists across requests.
-    // Temporary solution until DB is added.
+    // Temporary solution until DB is added (Lab #2).
     private static readonly List<Game> _games = new();
     private static int _nextId = 1;
 
