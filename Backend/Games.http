@@ -1,0 +1,23 @@
+@Backend_HostAddress = http://localhost:5108
+
+### Get all games
+GET {{Backend_HostAddress}}/games/getall
+Accept: application/json
+
+### Get game by id
+GET {{Backend_HostAddress}}/games/get?id=1
+Accept: application/json
+
+### Create a game
+POST {{Backend_HostAddress}}/games/create
+Content-Type: application/json
+
+{
+  "footballFieldId": 1,
+  "createdByUsername": "lukas",
+  "startTime": "2026-10-01T18:00:00Z",
+  "maxPlayers": 10
+}
+
+### Delete a game
+DELETE {{Backend_HostAddress}}/games/delete?id=1
