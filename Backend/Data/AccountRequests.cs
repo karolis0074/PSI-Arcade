@@ -26,7 +26,7 @@ namespace Backend
         [Required] string OldPassword,
 
         [Required]
-        [StringLength(20, MinimumLength = 3)] 
+        [StringLength(30, MinimumLength = 8)] 
         string NewPassword
     );
 

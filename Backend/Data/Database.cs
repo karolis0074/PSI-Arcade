@@ -25,7 +25,7 @@ namespace Backend
         {
             foreach (Account account in accounts)
             {
-                if (account.Username == username)
+                if (String.Equals(account.Username, username, StringComparison.OrdinalIgnoreCase))
                     return account;
             }
             return null;
