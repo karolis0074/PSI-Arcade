@@ -1,8 +1,5 @@
 @HostAddress = http://localhost:5108
 
-### Get display name
-GET {{HostAddress}}/Accounts/getname?username=karolis123
-
 ### Register
 POST {{HostAddress}}/Accounts/register
 Content-Type: application/json
@@ -13,7 +10,8 @@ Content-Type: application/json
   "password": "test1234"
 }
 
-### Login
+### Login (captures the token for requests below)
+# @name login
 POST {{HostAddress}}/Accounts/login
 Content-Type: application/json
 
@@ -22,32 +20,29 @@ Content-Type: application/json
   "password": "test1234"
 }
 
-### Change display name
+### Get display name (no auth needed)
+GET {{HostAddress}}/Accounts/getname?username=karolis123
+
+### Change display name (requires token)
 POST {{HostAddress}}/Accounts/changename
+Authorization: Bearer {{login.response.body.$.token}}
 Content-Type: application/json
 
 {
-  "username": "karolis123",
-  "password": "test1234",
-  "newName": "Karolis"
+  "newName": "KarolisV2"
 }
 
-### Change password
+### Change password (requires token)
 POST {{HostAddress}}/Accounts/changepass
+Authorization: Bearer {{login.response.body.$.token}}
 Content-Type: application/json
 
 {
-  "username": "karolis123",
   "oldPassword": "test1234",
   "newPassword": "newPassword1"
 }
 
-### Delete account
+### Delete account (requires token)
 DELETE {{HostAddress}}/Accounts/delete
-Content-Type: application/json
-
-{
-  "username": "karolis123",
-  "password": "newPassword1"
-}
+Authorization: Bearer {{login.response.body.$.token}}
 ###
