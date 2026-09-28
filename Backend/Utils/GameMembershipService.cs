@@ -50,5 +50,25 @@ namespace SportMatch.API.Utils
             UpdateStatus(game);
             return MembershipResult.Success;
         }
+
+        public MembershipResult Leave(int gameId, string username)
+        {
+            var game = _store.GetById(gameId);
+
+            if (game is null)
+                return MembershipResult.GameNotFound;
+
+            // can't leave a game that already started
+            if (game.StartTime <= DateTime.UtcNow)
+                return MembershipResult.GameStarted;
+
+            // user has to be in the game to leave it
+            if (!game.JoinedUsernames.Contains(username))
+                return MembershipResult.NotJoined;
+
+            game.JoinedUsernames.Remove(username);
+            UpdateStatus(game);
+            return MembershipResult.Success;
+        }
     }
 }

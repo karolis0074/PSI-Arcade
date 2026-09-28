@@ -6,5 +6,6 @@ public enum MembershipResult
     GameNotFound,
     GameStarted,
     AlreadyJoined,
-    GameFull
+    GameFull,
+    NotJoined
 }
