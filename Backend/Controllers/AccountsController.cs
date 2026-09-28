@@ -58,7 +58,7 @@ namespace Backend.Controllers
 
             if (_authService.CheckLogin(account, request.Password))
             {
-                return Ok(_cryptService.GenerateToken(account)); // returns jwt token
+                return Ok(new { token = _cryptService.GenerateToken(account) }); // returns jwt token
             }
 
             return Unauthorized();
