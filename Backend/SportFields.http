@@ -1,0 +1,29 @@
+@Backend_HostAddress = http://localhost:5108
+
+### Get all fields
+GET {{Backend_HostAddress}}/sportfields/getall
+Accept: application/json
+
+### Get field by id
+GET {{Backend_HostAddress}}/sportfields/get?id=1
+Accept: application/json
+
+### Search by city
+GET {{Backend_HostAddress}}/sportfields/search?city=Vilnius
+Accept: application/json
+
+### Search by game type
+GET {{Backend_HostAddress}}/sportfields/search?gameType=Football
+Accept: application/json
+
+### Search by city and game type
+GET {{Backend_HostAddress}}/sportfields/search?city=Vilnius&gameType=Basketball
+Accept: application/json
+
+### Search by field size (L = large stadiums)
+GET {{Backend_HostAddress}}/sportfields/search?fieldType=L
+Accept: application/json
+
+### Search by game type (Tennis)
+GET {{Backend_HostAddress}}/sportfields/search?gameType=Tennis
+Accept: application/json
