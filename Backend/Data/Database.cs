@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Runtime.InteropServices;
+﻿using Backend.Data;
 
 namespace Backend
 {
@@ -23,32 +22,28 @@ namespace Backend
 
         public Account? GetAccount(string username)
         {
-            foreach (Account account in accounts)
-            {
-                if (String.Equals(account.Username, username, StringComparison.OrdinalIgnoreCase))
-                    return account;
-            }
-            return null;
+            return accounts.FirstOrDefault(a =>
+                String.Equals(a.Username, username, StringComparison.OrdinalIgnoreCase));
         }
 
-        public int AddAccount(Account account)
+        public RegisterResult AddAccount(Account account)
         {
             if (account == null)
-                return 2;
+                return RegisterResult.InvalidInput;
             if (GetAccount(account.Username) != null)
-                return 1;
+                return RegisterResult.UsernameTaken;
 
             accounts.Add(account);
-            return 0;
+            return RegisterResult.Success;
         }
 
-        public int DeleteAccount(string username)
+        public AccountResult DeleteAccount(string username)
         {
-            Account account = GetAccount(username);
+            Account? account = GetAccount(username);
             if (account == null || !accounts.Remove(account))
-                return 1;
+                return AccountResult.NotFound;
 
-            return 0;
+            return AccountResult.Success;
         }
     }
 }
