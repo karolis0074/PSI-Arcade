@@ -1,4 +1,5 @@
 using Backend.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
@@ -8,6 +9,8 @@ namespace Backend.Controllers;
 public class GamesController : ControllerBase
 {
     private readonly GameStore _store = new();
+
+    private string GetUsername() => User.Identity!.Name!;
 
     // GET /games/getall
     [HttpGet("getall")]
@@ -29,9 +32,12 @@ public class GamesController : ControllerBase
     }
 
     // POST /games/create
+    [Authorize]
     [HttpPost("create")]
     public IActionResult Create(Game game)
     {
+        // when tracking game host use GetUsername() 
+
         // game must have at least 1 player slot.
         if (game.MaxPlayers <= 0)
             return BadRequest("MaxPlayers must be greater than 0");
@@ -45,9 +51,11 @@ public class GamesController : ControllerBase
     }
 
     // DELETE /games/delete?id=1
+    [Authorize]
     [HttpDelete("delete")]
     public IActionResult Delete([FromQuery] int id)
     {
+        // use GetUsername() to check if user is game host
         var success = _store.Delete(id);
 
         if (!success)
