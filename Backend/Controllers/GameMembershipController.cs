@@ -25,4 +25,19 @@ public class GameMembershipController : ControllerBase
 
         return Ok(_store.GetById(id));
     }
+
+    // POST /games/leave?id=1&username=tautvydas
+    [HttpPost("leave")]
+    public IActionResult Leave([FromQuery] int id, [FromQuery] string username)
+    {
+        var result = _membership.Leave(id, username);
+
+        if (result == MembershipResult.GameNotFound)
+            return NotFound(result.ToMessage());
+
+        if (result != MembershipResult.Success)
+            return BadRequest(result.ToMessage());
+
+        return Ok(_store.GetById(id));
+    }
 }
