@@ -40,4 +40,21 @@ public class GameMembershipController : ControllerBase
 
         return Ok(_store.GetById(id));
     }
+
+    // GET /games/spots?id=1
+    [HttpGet("spots")]
+    public IActionResult GetSpots([FromQuery] int id)
+    {
+        var game = _store.GetById(id);
+
+        if (game is null)
+            return NotFound(MembershipResult.GameNotFound.ToMessage());
+
+        var spots = new GameSpots();
+        spots.Joined = game.JoinedUsernames.Count;
+        spots.Max = game.MaxPlayers;
+        spots.Free = _membership.GetFreeSpots(game);
+
+        return Ok(spots);
+    }
 }
