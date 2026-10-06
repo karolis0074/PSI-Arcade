@@ -13,7 +13,7 @@ POST {{Backend_HostAddress}}/games/create
 Content-Type: application/json
 
 {
-  "footballFieldId": 2,
+  "footballFieldId": 999,
   "createdByUsername": "lukas",
   "startTime": "2026-10-09T18:00:00Z",
   "maxPlayers": 10
