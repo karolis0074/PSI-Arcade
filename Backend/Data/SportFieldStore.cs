@@ -1,5 +1,5 @@
-using System.Collections;      
-using System.Text.Json;        
+using System.Collections;
+using System.Text.Json;
 
 namespace Backend.Data;
 
@@ -10,20 +10,16 @@ public class SportFieldStore : IEnumerable<SportField>
     public SportFieldStore(AppDbContext db)
     {
         _db = db;
-        SeedIfEmpty();   // Įkelia duomenis į DB
+        SeedIfEmpty();
     }
 
-    // Įkelia aikšteles iš JSON, jei DB tuščia.
     private void SeedIfEmpty()
     {
-        // Jei DB jau turi duomenų - nieko nedarom.
         if (_db.SportFields.Any())
             return;
 
         using var stream = File.OpenRead("Data/sportfields.json");
 
-        // JSON → List<SportField>.
-        // PropertyNameCaseInsensitive - leidžia didžiąsias/mažąsias raides.
         var fields = JsonSerializer.Deserialize<List<SportField>>(
             stream,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -31,7 +27,6 @@ public class SportFieldStore : IEnumerable<SportField>
         if (fields is not null)
         {
             _db.SportFields.AddRange(fields);
-
             _db.SaveChanges();
         }
     }
@@ -46,13 +41,13 @@ public class SportFieldStore : IEnumerable<SportField>
         var query = _db.SportFields.AsQueryable();
 
         if (!string.IsNullOrEmpty(city))
-            query = query.Where(f => f.City == city);
+            query = query.Where(f => f.City.ToLower() == city.ToLower());
 
         if (!string.IsNullOrEmpty(gameType))
-            query = query.Where(f => f.GameType == gameType);
+            query = query.Where(f => f.GameType.ToLower() == gameType.ToLower());
 
         if (!string.IsNullOrEmpty(fieldType))
-            query = query.Where(f => f.FieldType == fieldType);
+            query = query.Where(f => f.FieldType.ToLower() == fieldType.ToLower());
 
         return query.ToList();
     }

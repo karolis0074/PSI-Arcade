@@ -9,7 +9,7 @@ GET {{Backend_HostAddress}}/sportfields/get?id=1
 Accept: application/json
 
 ### Search by city
-GET {{Backend_HostAddress}}/sportfields/search?city=Vilnius
+GET {{Backend_HostAddress}}/sportfields/search?city=vilnius
 Accept: application/json
 
 ### Search by game type
@@ -17,7 +17,7 @@ GET {{Backend_HostAddress}}/sportfields/search?gameType=Football
 Accept: application/json
 
 ### Search by city and game type
-GET {{Backend_HostAddress}}/sportfields/search?city=Vilnius&gameType=Basketball
+GET {{Backend_HostAddress}}/sportfields/search?city=vilnius&gameType=Basketball
 Accept: application/json
 
 ### Search by field size (L = large stadiums)

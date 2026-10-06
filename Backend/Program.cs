@@ -6,23 +6,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-// DB setup
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=app.db"));
 
-// Store registracija
 builder.Services.AddScoped<SportFieldStore>();
+builder.Services.AddScoped<GameStore>();
 
 var app = builder.Build();
 
-// Automatinė migracija ir seed'inimas paleidžiant programą
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 
-    // Seed'inimas — sukuria SportFieldStore, kuris įkelia duomenis
-    var store = scope.ServiceProvider.GetRequiredService<SportFieldStore>();
+    var sportStore = scope.ServiceProvider.GetRequiredService<SportFieldStore>();
 }
 
 if (app.Environment.IsDevelopment())

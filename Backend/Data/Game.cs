@@ -4,6 +4,7 @@ public class Game
 {
     public int Id { get; set; }
     public int FootballFieldId { get; set; }
+    public SportField? FootballField { get; set; }
     public string CreatedByUsername { get; set; } = string.Empty;
     public DateTime StartTime { get; set; }
     public int MaxPlayers { get; set; }

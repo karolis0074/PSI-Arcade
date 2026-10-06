@@ -7,7 +7,12 @@ namespace Backend.Controllers;
 [Route("games")]
 public class GamesController : ControllerBase
 {
-    private readonly GameStore _store = new();
+    private readonly GameStore _store;
+
+    public GamesController(GameStore store)
+    {
+        _store = store;
+    }
 
     // GET /games/getall
     [HttpGet("getall")]
@@ -32,11 +37,9 @@ public class GamesController : ControllerBase
     [HttpPost("create")]
     public IActionResult Create(Game game)
     {
-        // game must have at least 1 player slot.
         if (game.MaxPlayers <= 0)
             return BadRequest("MaxPlayers must be greater than 0");
 
-        // users cannot create games in the past.
         if (game.StartTime <= DateTime.UtcNow)
             return BadRequest("StartTime must be in the future");
 
