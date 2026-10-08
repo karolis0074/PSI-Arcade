@@ -10,7 +10,7 @@ namespace Backend.Controllers;
 public class GamesController : ControllerBase
 {
     private readonly GameStore _store = new();
-    private readonly GameManagerService _gameManager;
+    private readonly GameManagerService _gameManager = new();
 
     private string GetUsername() => User.Identity!.Name!;
 
