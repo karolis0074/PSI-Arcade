@@ -1,6 +1,7 @@
 using Backend.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SportMatch.API.Utils;
 
 namespace Backend.Controllers;
 
@@ -9,6 +10,7 @@ namespace Backend.Controllers;
 public class GamesController : ControllerBase
 {
     private readonly GameStore _store = new();
+    private readonly GameManagerService _gameManager;
 
     private string GetUsername() => User.Identity!.Name!;
 
@@ -55,7 +57,9 @@ public class GamesController : ControllerBase
     [HttpDelete("delete")]
     public IActionResult Delete([FromQuery] int id)
     {
-        // use GetUsername() to check if user is game host
+        if (!_gameManager.IsHost(GetUsername(), id))
+            return Unauthorized();
+
         var success = _store.Delete(id);
 
         if (!success)
