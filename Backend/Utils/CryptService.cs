@@ -17,6 +17,11 @@ namespace SportMatch.API.Utils
         {
             var config = new ConfigurationBuilder().AddUserSecrets<CryptService>().Build();
 
+            string jwtKey = config["Jwt:Key"];
+            string jwtIssuer = config["Jwt:Issuer"];
+            if (jwtKey == null || jwtIssuer == null)
+                throw new InvalidOperationException("Jwt:Key and Jwt:Issuer must be configured. Please take a look at README-jwt-setup.pdf");
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!)); // Jwt:Key and Jwt:Issuer have to be set up
             _signingCreds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);     // Look at README-jwt-setup.pdf
             _issuer = config["Jwt:Issuer"]!;
