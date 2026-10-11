@@ -1,5 +1,6 @@
 using Backend.Data;
 using Microsoft.EntityFrameworkCore;
+using SportMatch.API.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<SportFieldStore>();
 builder.Services.AddScoped<GameStore>();
+builder.Services.AddScoped<GameMembershipService>();
 
 var app = builder.Build();
 

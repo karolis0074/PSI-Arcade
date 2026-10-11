@@ -8,8 +8,14 @@ namespace Backend.Controllers;
 [Route("games")]
 public class GameMembershipController : ControllerBase
 {
-    private readonly GameMembershipService _membership = new();
-    private readonly GameStore _store = new();
+    private readonly GameMembershipService _membership;
+    private readonly GameStore _store;
+
+    public GameMembershipController(GameMembershipService membership, GameStore store)
+    {
+        _membership = membership;
+        _store = store;
+    }
 
     // POST /games/join?id=1&username=tautvydas
     [HttpPost("join")]

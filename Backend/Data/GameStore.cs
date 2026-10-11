@@ -30,4 +30,9 @@ public class GameStore
         _db.SaveChanges();
         return true;
     }
+    public void Update(Game game)
+    {
+        _db.Games.Update(game);
+        _db.SaveChanges();
+    }
 }
