@@ -39,12 +39,15 @@ namespace SportMatch.API.Utils
             if (game is null)
                 return MembershipResult.GameNotFound;
 
+            // can't join a game that already started
             if (game.StartTime <= DateTime.UtcNow)
                 return MembershipResult.GameStarted;
 
+            // user can't join the same game twice
             if (game.JoinedUsernames.Contains(username))
                 return MembershipResult.AlreadyJoined;
 
+            // no free spots left
             if (GetFreeSpots(game) <= 0)
                 return MembershipResult.GameFull;
 
@@ -63,9 +66,11 @@ namespace SportMatch.API.Utils
             if (game is null)
                 return MembershipResult.GameNotFound;
 
+             // can't leave a game that already started
             if (game.StartTime <= DateTime.UtcNow)
                 return MembershipResult.GameStarted;
 
+            // user has to be in the game to leave it
             if (!game.JoinedUsernames.Contains(username))
                 return MembershipResult.NotJoined;
 
