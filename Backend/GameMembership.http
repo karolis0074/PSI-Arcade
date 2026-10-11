@@ -1,0 +1,22 @@
+@Backend_HostAddress = http://localhost:5108
+
+### Create a game to join
+POST {{Backend_HostAddress}}/games/create
+Content-Type: application/json
+
+{
+  "footballFieldId": 1,
+  "createdByUsername": "lukas",
+  "startTime": "2027-01-01T18:00:00Z",
+  "maxPlayers": 10
+}
+
+### Join a game
+POST {{Backend_HostAddress}}/games/join?id=1&username=tautvydas
+
+### Leave a game
+POST {{Backend_HostAddress}}/games/leave?id=1&username=tautvydas
+
+### Get free spots of a game
+GET {{Backend_HostAddress}}/games/spots?id=1
+Accept: application/json
