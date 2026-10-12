@@ -1,0 +1,5 @@
+@Backend_HostAddress = http://localhost:5108
+
+### Get game statistics
+GET {{Backend_HostAddress}}/games/statistics
+Accept: application/json
