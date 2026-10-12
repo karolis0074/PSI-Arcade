@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+﻿using Backend.Data;
 using Microsoft.AspNetCore.Mvc;
 using SportMatch.API.Utils;
 
@@ -29,26 +30,19 @@ namespace Backend.Controllers
         [HttpPost("register")]
         public IActionResult Register(RegisterRequest request)
         {
-            int returnCode = _accountService.Register(
+            var result = _accountService.Register(
                 request.DisplayName,
                 request.Username,
                 request.Password
             );
 
-            switch (returnCode)
+            return result switch
             {
-                case 0:
-                    return Ok();
-
-                case 1:
-                    return Conflict(); // user already exists
-
-                case 2:
-                    return BadRequest(); // account could not be created
-
-                default:
-                    return StatusCode(500);
-            }
+                RegisterResult.Success => Ok(),
+                RegisterResult.UsernameTaken => Conflict(),
+                RegisterResult.InvalidInput => BadRequest(),
+                _ => StatusCode(500)
+            };
         }
 
         [HttpPost("login")]
@@ -68,22 +62,18 @@ namespace Backend.Controllers
         [HttpPost("changename")]
         public IActionResult ChangeDisplayName(ChangeDisplayNameRequest request)
         {
-            int returnCode = _accountService.ChangeDisplayName(GetUsername(), request.NewName);
+            if (!_authService.CheckLogin(request.Username, request.Password))
+                return Unauthorized();
 
-            switch (returnCode)
+            var result = _accountService.ChangeDisplayName(request.Username, request.NewName);
+
+            return result switch
             {
-                case 0:
-                    return Ok();
-
-                case 1:
-                    return NotFound();
-
-                case 2:
-                    return BadRequest();
-
-                default:
-                    return StatusCode(500);
-            }
+                AccountResult.Success => Ok(),
+                AccountResult.NotFound => NotFound(),
+                AccountResult.InvalidInput => BadRequest(),
+                _ => StatusCode(500)
+            };
         }
 
         [Authorize]
@@ -94,38 +84,32 @@ namespace Backend.Controllers
             if (!_authService.CheckLogin(username, request.OldPassword))
                 return Unauthorized();
 
-            int returnCode = _accountService.ChangePassword(username, request.NewPassword);
+             var result = _accountService.ChangePassword(request.Username, request.NewPassword);
 
-            switch (returnCode)
+            return result switch
             {
-                case 0:
-                    return Ok();
-
-                case 2:
-                    return BadRequest();
-
-                default:
-                    return StatusCode(500);
-            }
+                AccountResult.Success => Ok(),
+                AccountResult.NotFound => NotFound(),
+                AccountResult.InvalidInput => BadRequest(),
+                _ => StatusCode(500)
+            };
         }
 
         [Authorize]
         [HttpDelete("delete")]
         public IActionResult DeleteAccount()
         {
-            int returnCode = _db.DeleteAccount(GetUsername());
-            
-            switch (returnCode)
+            if (!_authService.CheckLogin(request.Username, request.Password))
+                return Unauthorized();
+
+            var result = _db.DeleteAccount(request.Username);
+
+            return result switch
             {
-                case 0:
-                    return Ok();
-
-                case 1:
-                    return NotFound();
-
-                default:
-                    return StatusCode(500);
-            }
+                AccountResult.Success => Ok(),
+                AccountResult.NotFound => NotFound(),
+                _ => StatusCode(500)
+            };
         }
     }
 }

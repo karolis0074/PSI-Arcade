@@ -1,4 +1,5 @@
 ﻿using Backend;
+using Backend.Data;
 
 namespace SportMatch.API.Utils
 {
@@ -22,48 +23,47 @@ namespace SportMatch.API.Utils
             _crypt = new CryptService();
         }
 
-        public int Register(string displayName, string username, string password)
+        public RegisterResult Register(string displayName, string username, string password)
         {
             if (String.IsNullOrWhiteSpace(displayName) ||
-            String.IsNullOrWhiteSpace(username) ||
-            String.IsNullOrWhiteSpace(password))
-                return 2;
+                String.IsNullOrWhiteSpace(username) ||
+                String.IsNullOrWhiteSpace(password))
+                return RegisterResult.InvalidInput;
 
             var passwordHash = _crypt.Hash(password);
             var account = new Account(displayName, username, passwordHash);
             return _db.AddAccount(account);
         }
 
-        public int ChangePassword(Account? account, string newPassword)
+        public AccountResult ChangePassword(Account? account, string newPassword)
         {
-            
             if (String.IsNullOrWhiteSpace(newPassword))
-                return 2; // bad request
+                return AccountResult.InvalidInput;
             if (account == null)
-                return 1; // not found
+                return AccountResult.NotFound;
 
             account.PasswordHash = _crypt.Hash(newPassword);
-            return 0; // ok
+            return AccountResult.Success;
         }
 
-        public int ChangePassword(string username, string newPassword)
+        public AccountResult ChangePassword(string username, string newPassword)
         {
             var account = _db.GetAccount(username);
             return ChangePassword(account, newPassword);
         }
 
-        public int ChangeDisplayName(Account account, string newName)
+        public AccountResult ChangeDisplayName(Account? account, string newName)
         {
             if (String.IsNullOrWhiteSpace(newName))
-                return 2; // bad request
+                return AccountResult.InvalidInput;
             if (account == null)
-                return 1; // account not found
+                return AccountResult.NotFound;
 
             account.DisplayName = newName;
-            return 0;
+            return AccountResult.Success;
         }
 
-        public int ChangeDisplayName(string username, string newName)
+        public AccountResult ChangeDisplayName(string username, string newName)
         {
             var account = _db.GetAccount(username);
             return ChangeDisplayName(account, newName);
