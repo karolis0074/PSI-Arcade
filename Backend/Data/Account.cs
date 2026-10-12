@@ -2,7 +2,7 @@
 {
     public class Account
     {
-        public String DisplayName;
+        public string DisplayName;
         public String Username { get; private set; }
         public int Balance { get; private set; }
 

@@ -42,3 +42,8 @@ appsettings.*.local.json
 # OS files
 .DS_Store
 Thumbs.db
+
+# SQLite database
+app.db
+app.db-shm
+app.db-wal

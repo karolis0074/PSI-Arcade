@@ -7,7 +7,14 @@ namespace Backend.Controllers;
 [Route("games")]
 public class GamesController : ControllerBase
 {
-    private readonly GameStore _store = new();
+    private readonly GameStore _store;
+    private readonly AppDbContext _db;
+
+    public GamesController(GameStore store, AppDbContext db)
+    {
+        _store = store;
+        _db = db;
+    }
 
     // GET /games/getall
     [HttpGet("getall")]
@@ -39,6 +46,11 @@ public class GamesController : ControllerBase
         // users cannot create games in the past.
         if (game.StartTime <= DateTime.UtcNow)
             return BadRequest("StartTime must be in the future");
+
+        // Patikrinam, ar aikštelė egzistuoja
+        var field = _db.SportFields.FirstOrDefault(f => f.Id == game.FootballFieldId);
+        if (field is null)
+            return BadRequest("Football field not found");
 
         var created = _store.Add(game);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);

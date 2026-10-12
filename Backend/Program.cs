@@ -1,9 +1,28 @@
+using Backend.Data;
+using Microsoft.EntityFrameworkCore;
+using SportMatch.API.Utils;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=app.db"));
+
+builder.Services.AddScoped<SportFieldStore>();
+builder.Services.AddScoped<GameStore>();
+builder.Services.AddScoped<GameMembershipService>();
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+
+    var sportStore = scope.ServiceProvider.GetRequiredService<SportFieldStore>();
+}
 
 if (app.Environment.IsDevelopment())
 {
