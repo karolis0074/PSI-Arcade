@@ -10,7 +10,7 @@ namespace SportMatch.API.Utils
         {
             if (game == null)
                 return null;
-            return game.JoinedUsernames.First(); // Game has no host field so we use first joined username as the host username (maybe leave like this?)
+            return game.JoinedUsernames.FirstOrDefault(); // Game has no host field so we use first joined username as the host username (maybe leave like this?)
         }
 
         public String? GetHostUsername(int id)
@@ -23,7 +23,9 @@ namespace SportMatch.API.Utils
             if (username == null || game == null)
                 return false;
 
-            string hostUsername = GetHostUsername(game);
+            string? hostUsername = GetHostUsername(game);
+            if (hostUsername == null)
+                return false;
 
             return hostUsername.Equals(username);
         }

@@ -57,7 +57,12 @@ public class GamesController : ControllerBase
     [HttpDelete("delete")]
     public IActionResult Delete([FromQuery] int id)
     {
-        if (!_gameManager.IsHost(GetUsername(), id))
+        var game = _store.GetById(id);
+
+        if (game is null)
+            return NotFound();
+
+        if (!_gameManager.IsHost(GetUsername(), game))
             return Unauthorized();
 
         var success = _store.Delete(id);
