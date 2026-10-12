@@ -62,10 +62,7 @@ namespace Backend.Controllers
         [HttpPost("changename")]
         public IActionResult ChangeDisplayName(ChangeDisplayNameRequest request)
         {
-            if (!_authService.CheckLogin(request.Username, request.Password))
-                return Unauthorized();
-
-            var result = _accountService.ChangeDisplayName(request.Username, request.NewName);
+            var result = _accountService.ChangeDisplayName(GetUsername(), request.NewName);
 
             return result switch
             {
@@ -84,7 +81,7 @@ namespace Backend.Controllers
             if (!_authService.CheckLogin(username, request.OldPassword))
                 return Unauthorized();
 
-             var result = _accountService.ChangePassword(request.Username, request.NewPassword);
+            var result = _accountService.ChangePassword(username, request.NewPassword);
 
             return result switch
             {
@@ -99,10 +96,7 @@ namespace Backend.Controllers
         [HttpDelete("delete")]
         public IActionResult DeleteAccount()
         {
-            if (!_authService.CheckLogin(request.Username, request.Password))
-                return Unauthorized();
-
-            var result = _db.DeleteAccount(request.Username);
+            var result = _db.DeleteAccount(GetUsername());
 
             return result switch
             {
