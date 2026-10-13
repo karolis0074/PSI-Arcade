@@ -7,17 +7,20 @@ namespace SportMatch.API.Utils
     {
         private Database _db;
         private AuthService _auth;
+        private CryptService _crypt;
 
         public AccountService()
         {
             _db = Database.GetInstance();
             _auth = new AuthService();
+            _crypt = new CryptService();
         }
 
         public AccountService(Database db)
         {
             _db = db;
             _auth = new AuthService(db);
+            _crypt = new CryptService();
         }
 
         public RegisterResult Register(string displayName, string username, string password)
@@ -27,7 +30,8 @@ namespace SportMatch.API.Utils
                 String.IsNullOrWhiteSpace(password))
                 return RegisterResult.InvalidInput;
 
-            var account = new Account(displayName, username, password);
+            var passwordHash = _crypt.Hash(password);
+            var account = new Account(displayName, username, passwordHash);
             return _db.AddAccount(account);
         }
 
@@ -38,7 +42,7 @@ namespace SportMatch.API.Utils
             if (account == null)
                 return AccountResult.NotFound;
 
-            account.Password = newPassword;
+            account.PasswordHash = _crypt.Hash(newPassword);
             return AccountResult.Success;
         }
 

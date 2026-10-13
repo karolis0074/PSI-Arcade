@@ -22,7 +22,6 @@ namespace Backend
     );
 
     public record ChangePasswordRequest(
-        [Required] string Username,
         [Required] string OldPassword,
 
         [Required]
@@ -31,9 +30,6 @@ namespace Backend
     );
 
     public record ChangeDisplayNameRequest(
-        [Required] string Username,
-        [Required] string Password,
-
         [Required]
         [StringLength(20, MinimumLength = 3)]
         string NewName

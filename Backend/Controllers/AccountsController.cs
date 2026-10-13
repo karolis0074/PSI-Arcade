@@ -1,3 +1,4 @@
+﻿using Microsoft.AspNetCore.Authorization;
 ﻿using Backend.Data;
 using Microsoft.AspNetCore.Mvc;
 using SportMatch.API.Utils;
@@ -11,7 +12,11 @@ namespace Backend.Controllers
         private Database _db = Database.GetInstance();
         private AccountService _accountService = new AccountService();
         private AuthService _authService = new AuthService();
+        private CryptService _cryptService = new CryptService();
 
+
+        private string GetUsername() => User.Identity!.Name!;
+             
         [HttpGet("getname")]
         public IActionResult GetDisplayName([FromQuery] string username)
         {
@@ -43,23 +48,21 @@ namespace Backend.Controllers
         [HttpPost("login")]
         public IActionResult Login(LoginRequest request)
         {
-            if (_authService.CheckLogin(request.Username, request.Password))
+            Account account = _db.GetAccount(request.Username);
+
+            if (_authService.CheckLogin(account, request.Password))
             {
-                // later need to implement tokens/cookies so user can actually
-                // log in and be authorized to do other actions
-                return Ok();
+                return Ok(new { token = _cryptService.GenerateToken(account) }); // returns jwt token
             }
 
             return Unauthorized();
         }
 
+        [Authorize]
         [HttpPost("changename")]
         public IActionResult ChangeDisplayName(ChangeDisplayNameRequest request)
         {
-            if (!_authService.CheckLogin(request.Username, request.Password))
-                return Unauthorized();
-
-            var result = _accountService.ChangeDisplayName(request.Username, request.NewName);
+            var result = _accountService.ChangeDisplayName(GetUsername(), request.NewName);
 
             return result switch
             {
@@ -70,13 +73,15 @@ namespace Backend.Controllers
             };
         }
 
+        [Authorize]
         [HttpPost("changepass")]
         public IActionResult ChangePassword(ChangePasswordRequest request)
         {
-            if (!_authService.CheckLogin(request.Username, request.OldPassword))
+            var username = GetUsername();
+            if (!_authService.CheckLogin(username, request.OldPassword))
                 return Unauthorized();
 
-             var result = _accountService.ChangePassword(request.Username, request.NewPassword);
+            var result = _accountService.ChangePassword(username, request.NewPassword);
 
             return result switch
             {
@@ -87,13 +92,11 @@ namespace Backend.Controllers
             };
         }
 
+        [Authorize]
         [HttpDelete("delete")]
-        public IActionResult DeleteAccount(LoginRequest request)
+        public IActionResult DeleteAccount()
         {
-            if (!_authService.CheckLogin(request.Username, request.Password))
-                return Unauthorized();
-
-            var result = _db.DeleteAccount(request.Username);
+            var result = _db.DeleteAccount(GetUsername());
 
             return result switch
             {
