@@ -7,8 +7,13 @@ namespace SportMatch.API.Utils
         // game is almost full when 80% of spots are taken
         private const double AlmostFullRatio = 0.8;
 
-        // same static game list that GamesController uses
-        private readonly GameStore _store = new();
+        // DI — GameStore ateina per konstruktorių
+        private readonly GameStore _store;
+
+        public GameMembershipService(GameStore store)
+        {
+            _store = store;
+        }
 
         public int GetFreeSpots(Game game)
         {
@@ -48,6 +53,9 @@ namespace SportMatch.API.Utils
 
             game.JoinedUsernames.Add(username);
             UpdateStatus(game);
+
+            _store.Update(game);
+
             return MembershipResult.Success;
         }
 
@@ -58,7 +66,7 @@ namespace SportMatch.API.Utils
             if (game is null)
                 return MembershipResult.GameNotFound;
 
-            // can't leave a game that already started
+             // can't leave a game that already started
             if (game.StartTime <= DateTime.UtcNow)
                 return MembershipResult.GameStarted;
 
@@ -68,6 +76,9 @@ namespace SportMatch.API.Utils
 
             game.JoinedUsernames.Remove(username);
             UpdateStatus(game);
+
+            _store.Update(game);
+
             return MembershipResult.Success;
         }
     }
