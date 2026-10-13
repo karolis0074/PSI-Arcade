@@ -9,16 +9,16 @@ namespace Backend.Controllers;
 [Route("games")]
 public class GamesController : ControllerBase
 {
-    private readonly GameManagerService _gameManager = new();
-
     private string GetUsername() => User.Identity!.Name!;
     private readonly GameStore _store;
     private readonly AppDbContext _db;
+    private readonly GameManagerService _gameManager;
 
-    public GamesController(GameStore store, AppDbContext db)
+    public GamesController(GameStore store, AppDbContext db, GameManagerService gameManager)
     {
         _store = store;
         _db = db;
+        _gameManager = gameManager;
     }
 
     // GET /games/getall

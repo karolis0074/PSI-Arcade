@@ -4,7 +4,12 @@ namespace SportMatch.API.Utils
 {
     public class GameManagerService
     {
-        private readonly GameStore _store = new();
+        private readonly GameStore _store;
+
+        public GameManagerService(GameStore store)
+        {
+            _store = store;
+        }
 
         public String? GetHostUsername(Game game)
         {
