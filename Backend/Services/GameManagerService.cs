@@ -4,9 +4,9 @@ namespace SportMatch.API.Utils
 {
     public class GameManagerService
     {
-        private readonly GameStore _store;
+        private readonly GameRepository _store;
 
-        public GameManagerService(GameStore store)
+        public GameManagerService(GameRepository store)
         {
             _store = store;
         }

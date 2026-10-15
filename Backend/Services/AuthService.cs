@@ -4,16 +4,16 @@ namespace SportMatch.API.Utils
 {
     public class AuthService
     {
-        private Database _db;
+        private AccountRepository _db;
         private CryptService _crypt;
 
         public AuthService()
         {
-            _db = Database.GetInstance();
+            _db = AccountRepository.GetInstance();
             _crypt = new CryptService();
         }
 
-        public AuthService(Database db)
+        public AuthService(AccountRepository db)
         {
             _db = db;
             _crypt = new CryptService();

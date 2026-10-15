@@ -3,11 +3,11 @@ using System.Text.Json;
 
 namespace Backend.Data;
 
-public class SportFieldStore : IEnumerable<SportField>
+public class SportFieldRepository : IEnumerable<SportField>
 {
     private readonly AppDbContext _db;
 
-    public SportFieldStore(AppDbContext db)
+    public SportFieldRepository(AppDbContext db)
     {
         _db = db;
         SeedIfEmpty();

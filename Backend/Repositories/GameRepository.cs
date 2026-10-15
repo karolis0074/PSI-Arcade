@@ -1,10 +1,10 @@
 namespace Backend.Data;
 
-public class GameStore
+public class GameRepository
 {
     private readonly AppDbContext _db;
 
-    public GameStore(AppDbContext db)
+    public GameRepository(AppDbContext db)
     {
         _db = db;
     }

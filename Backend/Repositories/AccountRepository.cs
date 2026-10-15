@@ -2,21 +2,21 @@
 
 namespace Backend
 {
-    public class Database // temporary singleton that stores user data while running
+    public class AccountRepository // temporary singleton that stores user data while running
     {                     // to be replaced with sql server or some other legitimate db later on
         private List<Account> accounts;
 
-        private static Database instance;
+        private static AccountRepository instance;
 
-        private Database()
+        private AccountRepository()
         {
             accounts = new List<Account>();
         }
 
-        public static Database GetInstance()
+        public static AccountRepository GetInstance()
         {
             if (instance == null)
-                instance = new Database();
+                instance = new AccountRepository();
             return instance;
         }
 

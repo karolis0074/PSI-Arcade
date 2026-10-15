@@ -7,9 +7,9 @@ namespace Backend.Controllers;
 [Route("sportfields")]
 public class SportFieldsController : ControllerBase
 {
-    private readonly SportFieldStore _store;
+    private readonly SportFieldRepository _store;
 
-    public SportFieldsController(SportFieldStore store)
+    public SportFieldsController(SportFieldRepository store)
     {
         _store = store;
     }

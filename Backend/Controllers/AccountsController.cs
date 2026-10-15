@@ -9,7 +9,7 @@ namespace Backend.Controllers
     [Route("[controller]")]
     public class AccountsController : ControllerBase
     {
-        private Database _db = Database.GetInstance();
+        private AccountRepository _db = AccountRepository.GetInstance();
         private AccountService _accountService = new AccountService();
         private AuthService _authService = new AuthService();
         private CryptService _cryptService = new CryptService();

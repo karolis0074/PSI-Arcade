@@ -9,9 +9,9 @@ namespace Backend.Controllers;
 public class GameMembershipController : ControllerBase
 {
     private readonly GameMembershipService _membership;
-    private readonly GameStore _store;
+    private readonly GameRepository _store;
 
-    public GameMembershipController(GameMembershipService membership, GameStore store)
+    public GameMembershipController(GameMembershipService membership, GameRepository store)
     {
         _membership = membership;
         _store = store;

@@ -1,4 +1,5 @@
 using Backend.Data;
+using SportMatch.API.Repositories;
 
 namespace SportMatch.API.Utils
 {
@@ -8,9 +9,9 @@ namespace SportMatch.API.Utils
         private const double AlmostFullRatio = 0.8;
 
         // DI — GameStore ateina per konstruktorių
-        private readonly GameStore _store;
+        private readonly GameRepository _store;
 
-        public GameMembershipService(GameStore store)
+        public GameMembershipService(GameRepository store)
         {
             _store = store;
         }
