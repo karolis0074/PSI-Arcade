@@ -1,4 +1,5 @@
-﻿using Backend.Data;
+﻿using SportMatch.API.Models;
+using SportMatch.API.Repositories;
 
 namespace SportMatch.API.Utils
 {

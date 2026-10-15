@@ -1,6 +1,8 @@
 using Backend.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SportMatch.API.Models;
+using SportMatch.API.Repositories;
 using SportMatch.API.Utils;
 
 namespace Backend.Controllers;

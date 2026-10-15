@@ -1,27 +1,27 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace Backend
+namespace SportMatch.API.Models
 {
     public class Account
     {
         public string DisplayName;
-        public String Username { get; private set; }
+        public string Username { get; private set; }
         public int Balance { get; private set; }
 
-        internal String PasswordHash;
+        internal string PasswordHash;
         
 
-        public Account(String displayName, String username, String passwordHash)
+        public Account(string displayName, string username, string passwordHash)
         {
-            if (String.IsNullOrWhiteSpace(username) || 
-                String.IsNullOrWhiteSpace(passwordHash))
+            if (string.IsNullOrWhiteSpace(username) || 
+                string.IsNullOrWhiteSpace(passwordHash))
                 throw new ArgumentNullException("Account username or password is invalid.");
 
-            this.DisplayName = displayName;
-            this.Username = username;
-            this.Balance = 5000;
+            DisplayName = displayName;
+            Username = username;
+            Balance = 5000;
 
-            this.PasswordHash = passwordHash;
+            PasswordHash = passwordHash;
         }
 
         public bool TrySpend(int amount)

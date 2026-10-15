@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SportMatch.API.Models;
 
 namespace Backend.Data;
 

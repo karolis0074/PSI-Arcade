@@ -1,4 +1,4 @@
-namespace Backend.Data;
+namespace SportMatch.API.Results;
 
 public enum RegisterResult
 {

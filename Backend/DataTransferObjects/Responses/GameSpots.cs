@@ -1,4 +1,4 @@
-namespace Backend.Data;
+namespace SportMatch.API.DataTransferObjects.Responses;
 
 public struct GameSpots
 {

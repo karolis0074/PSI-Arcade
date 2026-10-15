@@ -1,4 +1,4 @@
-using Backend.Data;
+using SportMatch.API.Results;
 
 namespace SportMatch.API.Utils
 {

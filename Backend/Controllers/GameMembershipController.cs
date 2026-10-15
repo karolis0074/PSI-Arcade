@@ -1,5 +1,7 @@
 using Backend.Data;
 using Microsoft.AspNetCore.Mvc;
+using SportMatch.API.Repositories;
+using SportMatch.API.Results;
 using SportMatch.API.Utils;
 
 namespace Backend.Controllers;

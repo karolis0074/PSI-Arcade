@@ -1,6 +1,7 @@
-﻿using Backend.Data;
+﻿using SportMatch.API.Models;
+using SportMatch.API.Results;
 
-namespace Backend
+namespace SportMatch.API.Repositories
 {
     public class AccountRepository // temporary singleton that stores user data while running
     {                     // to be replaced with sql server or some other legitimate db later on
@@ -23,7 +24,7 @@ namespace Backend
         public Account? GetAccount(string username)
         {
             return accounts.FirstOrDefault(a =>
-                String.Equals(a.Username, username, StringComparison.OrdinalIgnoreCase));
+                string.Equals(a.Username, username, StringComparison.OrdinalIgnoreCase));
         }
 
         public RegisterResult AddAccount(Account account)

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Backend
+namespace SportMatch.API.DataTransferObjects.Requests
 {
     public record RegisterRequest(
         [Required]

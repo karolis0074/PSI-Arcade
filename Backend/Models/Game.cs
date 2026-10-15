@@ -1,4 +1,6 @@
-namespace Backend.Data;
+using Backend.Data;
+
+namespace SportMatch.API.Models;
 
 public class Game
 {
