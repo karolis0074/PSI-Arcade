@@ -1,7 +1,7 @@
 ﻿using SportMatch.API.Models;
 using SportMatch.API.Repositories;
 
-namespace SportMatch.API.Utils
+namespace SportMatch.API.Services
 {
     public class GameManagerService
     {

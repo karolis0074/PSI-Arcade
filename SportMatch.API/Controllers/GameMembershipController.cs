@@ -1,10 +1,11 @@
-using Backend.Data;
+using SportMatch.API.Data;
 using Microsoft.AspNetCore.Mvc;
+using SportMatch.API.DataTransferObjects.Responses;
 using SportMatch.API.Repositories;
 using SportMatch.API.Results;
-using SportMatch.API.Utils;
+using SportMatch.API.Services;
 
-namespace Backend.Controllers;
+namespace SportMatch.API.Controllers;
 
 [ApiController]
 [Route("games")]

@@ -1,6 +1,6 @@
 using SportMatch.API.Results;
 
-namespace SportMatch.API.Utils
+namespace SportMatch.API.Services
 {
     public static class MembershipResultExtensions
     {

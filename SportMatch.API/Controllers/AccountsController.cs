@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SportMatch.API.Utils;
+using SportMatch.API.Services;
 using SportMatch.API.Repositories;
 using SportMatch.API.Models;
 using SportMatch.API.Results;
 using SportMatch.API.DataTransferObjects.Requests;
 
-namespace Backend.Controllers
+namespace SportMatch.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Backend.Data;
+using SportMatch.API.Data;
 using Microsoft.EntityFrameworkCore;
-using SportMatch.API.Utils;
+using SportMatch.API.Services;
 using SportMatch.API.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);

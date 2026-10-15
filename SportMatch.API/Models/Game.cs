@@ -1,4 +1,4 @@
-using Backend.Data;
+using SportMatch.API.Data;
 
 namespace SportMatch.API.Models;
 

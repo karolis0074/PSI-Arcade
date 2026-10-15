@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SportMatch.API.Models;
 
-namespace Backend.Data;
+namespace SportMatch.API.Data;
 
 public class AppDbContext : DbContext
 {

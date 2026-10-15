@@ -5,7 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace SportMatch.API.Utils
+namespace SportMatch.API.Services
 {
     public class CryptService
     {

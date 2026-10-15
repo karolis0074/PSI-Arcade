@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SportMatch.API.Repositories;
 
-namespace Backend.Controllers;
+namespace SportMatch.API.Controllers;
 
 [ApiController]
 [Route("sportfields")]
