@@ -1,0 +1,50 @@
+﻿using SportMatch.API.Models;
+using SportMatch.API.Results;
+
+namespace SportMatch.API.Repositories
+{
+    public class AccountRepository // temporary singleton that stores user data while running
+    {                     // to be replaced with sql server or some other legitimate db later on
+        private List<Account> accounts;
+
+        private static AccountRepository instance;
+
+        private AccountRepository()
+        {
+            accounts = new List<Account>();
+        }
+
+        public static AccountRepository GetInstance()
+        {
+            if (instance == null)
+                instance = new AccountRepository();
+            return instance;
+        }
+
+        public Account? GetAccount(string username)
+        {
+            return accounts.FirstOrDefault(a =>
+                string.Equals(a.Username, username, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public RegisterResult AddAccount(Account account)
+        {
+            if (account == null)
+                return RegisterResult.InvalidInput;
+            if (GetAccount(account.Username) != null)
+                return RegisterResult.UsernameTaken;
+
+            accounts.Add(account);
+            return RegisterResult.Success;
+        }
+
+        public AccountResult DeleteAccount(string username)
+        {
+            Account? account = GetAccount(username);
+            if (account == null || !accounts.Remove(account))
+                return AccountResult.NotFound;
+
+            return AccountResult.Success;
+        }
+    }
+}

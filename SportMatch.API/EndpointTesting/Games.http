@@ -1,0 +1,23 @@
+@SportMatch_HostAddress = http://localhost:5108
+
+### Get all games
+GET {{SportMatch_HostAddress}}/games/getall
+Accept: application/json
+
+### Get game by id
+GET {{SportMatch_HostAddress}}/games/get?id=1
+Accept: application/json
+
+### Create a game
+POST {{SportMatch_HostAddress}}/games/create
+Content-Type: application/json
+
+{
+  "footballFieldId": 999,
+  "createdByUsername": "lukas",
+  "startTime": "2026-10-09T18:00:00Z",
+  "maxPlayers": 10
+}
+
+### Delete a game
+DELETE {{SportMatch_HostAddress}}/games/delete?id=1
