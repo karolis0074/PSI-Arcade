@@ -4,7 +4,7 @@
 
 ## Why this matters
 
-The backend signs and validates JWT tokens using `Jwt:Key` and `Jwt:Issuer` from configuration (see `Program.cs` and `Utils/CryptService.cs`). These values are **not** committed to `appsettings.json` — each developer sets them locally with `dotnet user-secrets`.
+The backend signs and validates JWT tokens using `Jwt:Key` and `Jwt:Issuer` from configuration (see `Program.cs` and `Services/CryptService.cs`). These values are **not** committed to `appsettings.json` — each developer sets them locally with `dotnet user-secrets`.
 
 If they are not set, `Jwt:Key` is `null`, and `Encoding.UTF8.GetBytes(...)` throws — every endpoint, including `/games`, returns **500**.
 
@@ -15,7 +15,7 @@ If they are not set, `Jwt:Key` is `null`, and `Encoding.UTF8.GetBytes(...)` thro
 1. Open a terminal.
 2. Navigate to the backend project directory:
    ```bash
-   cd PSI-Arcade/Backend
+   cd PSI-Arcade/SportMatch.API
    ```
 3. Initialize user secrets for the project (safe to run even if already initialized):
    ```bash
