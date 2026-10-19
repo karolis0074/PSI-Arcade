@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Text.Json.Serialization;
 
 namespace SportMatch.API.Models
 {
     public class Account
     {
-        public string DisplayName;
+        public string DisplayName { get; set; }
         public string Username { get; private set; }
-        public int Balance { get; private set; }
 
-        internal string PasswordHash;
+        [JsonIgnore] public string PasswordHash { get; set; }
         
 
         public Account(string displayName, string username, string passwordHash)
@@ -19,27 +19,8 @@ namespace SportMatch.API.Models
 
             DisplayName = displayName;
             Username = username;
-            Balance = 5000;
 
             PasswordHash = passwordHash;
         }
-
-        public bool TrySpend(int amount)
-        {
-            if (Balance < amount || amount < 0)
-                return false;
-
-            Balance -= amount;
-            return true;
-        }
-
-        public bool AddFunds(int amount)
-        {
-            if (amount < 0)
-                return false;
-
-            Balance += amount;
-            return true;
-        }      
     }
 }
