@@ -31,9 +31,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<SportFieldRepository>();
 builder.Services.AddScoped<GameRepository>();
+builder.Services.AddScoped<AccountRepository>();
 builder.Services.AddScoped<GameMembershipService>();
 builder.Services.AddScoped<GameManagerService>();
 builder.Services.AddScoped<GameStatisticsService>();
+builder.Services.AddScoped<AccountService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddSingleton<CryptService>();
 
 var app = builder.Build();
 

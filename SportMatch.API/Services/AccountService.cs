@@ -6,22 +6,13 @@ namespace SportMatch.API.Services
 {
     public class AccountService
     {
-        private AccountRepository _db;
-        private AuthService _auth;
-        private CryptService _crypt;
+        private readonly AccountRepository _db;
+        private readonly CryptService _crypt;
 
-        public AccountService()
-        {
-            _db = AccountRepository.GetInstance();
-            _auth = new AuthService();
-            _crypt = new CryptService();
-        }
-
-        public AccountService(AccountRepository db)
+        public AccountService(AccountRepository db, CryptService crypt)
         {
             _db = db;
-            _auth = new AuthService(db);
-            _crypt = new CryptService();
+            _crypt = crypt;
         }
 
         public RegisterResult Register(string displayName, string username, string password)
@@ -44,6 +35,7 @@ namespace SportMatch.API.Services
                 return AccountResult.NotFound;
 
             account.PasswordHash = _crypt.Hash(newPassword);
+            _db.UpdateAccount(account);
             return AccountResult.Success;
         }
 
@@ -61,6 +53,7 @@ namespace SportMatch.API.Services
                 return AccountResult.NotFound;
 
             account.DisplayName = newName;
+            _db.UpdateAccount(account);
             return AccountResult.Success;
         }
 

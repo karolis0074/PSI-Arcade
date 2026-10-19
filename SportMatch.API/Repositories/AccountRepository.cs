@@ -1,30 +1,24 @@
-﻿using SportMatch.API.Models;
+﻿using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using SportMatch.API.Data;
+using SportMatch.API.Models;
 using SportMatch.API.Results;
 
 namespace SportMatch.API.Repositories
 {
-    public class AccountRepository // temporary singleton that stores user data while running
-    {                     // to be replaced with sql server or some other legitimate db later on
-        private List<Account> accounts;
+    public class AccountRepository
+    {
+        private readonly AppDbContext _db;
 
-        private static AccountRepository instance;
-
-        private AccountRepository()
+        public AccountRepository(AppDbContext db)
         {
-            accounts = new List<Account>();
+            _db = db;
         }
 
-        public static AccountRepository GetInstance()
-        {
-            if (instance == null)
-                instance = new AccountRepository();
-            return instance;
-        }
-
+        // Username column is NOCASE, so this lookup is case-insensitive
         public Account? GetAccount(string username)
         {
-            return accounts.FirstOrDefault(a =>
-                string.Equals(a.Username, username, StringComparison.OrdinalIgnoreCase));
+            return _db.Accounts.FirstOrDefault(a => a.Username == username);
         }
 
         public RegisterResult AddAccount(Account account)
@@ -34,16 +28,34 @@ namespace SportMatch.API.Repositories
             if (GetAccount(account.Username) != null)
                 return RegisterResult.UsernameTaken;
 
-            accounts.Add(account);
+            _db.Accounts.Add(account);
+
+            try
+            {
+                _db.SaveChanges();
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqliteException { SqliteErrorCode: 19 })
+            {
+                return RegisterResult.UsernameTaken; // same username was added between the check and the save
+            }
+
             return RegisterResult.Success;
+        }
+
+        public void UpdateAccount(Account account)
+        {
+            _db.Accounts.Update(account);
+            _db.SaveChanges();
         }
 
         public AccountResult DeleteAccount(string username)
         {
             Account? account = GetAccount(username);
-            if (account == null || !accounts.Remove(account))
+            if (account == null)
                 return AccountResult.NotFound;
 
+            _db.Accounts.Remove(account);
+            _db.SaveChanges();
             return AccountResult.Success;
         }
     }
