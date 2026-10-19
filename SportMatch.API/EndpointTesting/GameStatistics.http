@@ -1,0 +1,5 @@
+@SportMatch_HostAddress = http://localhost:5108
+
+### Get game statistics
+GET {{SportMatch_HostAddress}}/games/statistics
+Accept: application/json

@@ -33,6 +33,7 @@ builder.Services.AddScoped<SportFieldRepository>();
 builder.Services.AddScoped<GameRepository>();
 builder.Services.AddScoped<GameMembershipService>();
 builder.Services.AddScoped<GameManagerService>();
+builder.Services.AddScoped<GameStatisticsService>();
 
 var app = builder.Build();
 
