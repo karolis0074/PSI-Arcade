@@ -1,0 +1,37 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SportMatch.API.DataTransferObjects.Requests
+{
+    public record RegisterRequest(
+        [Required]
+        [StringLength(20, MinimumLength = 3)] 
+        string DisplayName,
+
+        [Required]
+        [StringLength(20, MinimumLength = 3)] 
+        string Username,
+
+        [Required]
+        [StringLength(30, MinimumLength = 8)] 
+        string Password
+    );
+
+    public record LoginRequest(
+        [Required] string Username,
+        [Required] string Password
+    );
+
+    public record ChangePasswordRequest(
+        [Required] string OldPassword,
+
+        [Required]
+        [StringLength(30, MinimumLength = 8)] 
+        string NewPassword
+    );
+
+    public record ChangeDisplayNameRequest(
+        [Required]
+        [StringLength(20, MinimumLength = 3)]
+        string NewName
+    );
+}
