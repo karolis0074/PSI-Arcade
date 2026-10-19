@@ -48,7 +48,7 @@ public class GamesController : ControllerBase
     // POST /games/create
     [Authorize]
     [HttpPost("create")]
-    public IActionResult Create(CreateGameRequest request)
+        public IActionResult Create(CreateGameRequest request)
     {
         if (request.StartTime <= DateTime.UtcNow)
             return BadRequest("StartTime must be in the future");
@@ -56,6 +56,9 @@ public class GamesController : ControllerBase
         var field = _db.SportFields.FirstOrDefault(f => f.Id == request.FootballFieldId);
         if (field is null)
             return BadRequest("Sport field not found");
+
+        if (request.MaxPlayers > field.Capacity)
+            return BadRequest($"MaxPlayers cannot exceed the field capacity ({field.Capacity})");
 
         var username = GetUsername();
 
