@@ -12,13 +12,8 @@ namespace SportMatch.API.Services
             _store = store;
         }
 
-        public String? GetHostUsername(Game game)
-        {
-            if (game == null)
-                return null;
-            return game.JoinedUsernames.FirstOrDefault(); // Game has no host field so we use first joined username as the host username (maybe leave like this?)
-        }
-
+        public String? GetHostUsername(Game game) => game?.CreatedByUsername;
+        
         public String? GetHostUsername(int id)
         {
             return GetHostUsername(_store.GetById(id));
