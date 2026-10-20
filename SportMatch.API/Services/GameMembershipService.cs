@@ -1,4 +1,3 @@
-using SportMatch.API.Data;
 using SportMatch.API.DataTransferObjects.Responses;
 using SportMatch.API.Models;
 using SportMatch.API.Repositories;
@@ -8,9 +7,6 @@ namespace SportMatch.API.Services
 {
     public class GameMembershipService
     {
-        // game is almost full when 80% of spots are taken
-        private const double AlmostFullRatio = 0.8;
-
         // DI — GameStore ateina per konstruktorių
         private readonly GameRepository _gameRepo;
 
@@ -44,18 +40,6 @@ namespace SportMatch.API.Services
             return spots;
         }
 
-        public void UpdateStatus(Game game)
-        {
-            int joined = game.JoinedUsernames.Count;
-
-            if (joined >= game.MaxPlayers)
-                game.Status = GameStatus.Full;
-            else if ((double)joined / game.MaxPlayers >= AlmostFullRatio)
-                game.Status = GameStatus.AlmostFull;
-            else
-                game.Status = GameStatus.Open;
-        }
-
         public MembershipResult Join(int gameId, string username)
         {
             var game = _gameRepo.GetById(gameId);
@@ -76,7 +60,7 @@ namespace SportMatch.API.Services
                 return MembershipResult.GameFull;
 
             game.JoinedUsernames.Add(username);
-            UpdateStatus(game);
+            game.UpdateStatus();
 
             _gameRepo.Update(game);
 
@@ -99,7 +83,7 @@ namespace SportMatch.API.Services
                 return MembershipResult.NotJoined;
 
             game.JoinedUsernames.Remove(username);
-            UpdateStatus(game);
+            game.UpdateStatus();
 
             _gameRepo.Update(game);
 

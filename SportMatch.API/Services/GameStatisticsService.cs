@@ -6,16 +6,16 @@ namespace SportMatch.API.Services
 {
     public class GameStatisticsService
     {
-        private readonly GameRepository _store;
+        private readonly GameRepository _gameRepo;
 
-        public GameStatisticsService(GameRepository store)
+        public GameStatisticsService(GameRepository gameRepo)
         {
-            _store = store;
+            _gameRepo = gameRepo;
         }
 
         public GameStatistics GetOverview()
         {
-            var games = _store.GetAll();
+            var games = _gameRepo.GetAll();
 
             var statistics = new GameStatistics();
             statistics.TotalGames = games.Count;
