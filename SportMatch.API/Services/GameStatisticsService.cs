@@ -26,7 +26,7 @@ namespace SportMatch.API.Services
         }
 
         // average number of joined players per game
-        private double GetAveragePlayers(List<Game> games)
+        private double GetAveragePlayers(IReadOnlyList<Game> games)
         {
             // no games yet, so there is nothing to divide by
             if (games.Count == 0)
@@ -41,7 +41,7 @@ namespace SportMatch.API.Services
         }
 
         // id of the field with the most games, null when there are no games
-        private int? GetMostPopularFieldId(List<Game> games)
+        private int? GetMostPopularFieldId(IReadOnlyList<Game> games)
         {
             // for every field id, how many games are on that field
             var gamesPerField = new Dictionary<int, int>();

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SportMatch.API.Models;
 using SportMatch.API.Repositories;
 using SportMatch.API.Services;
+using SportMatch.API.DataTransferObjects.Requests;
 
 namespace SportMatch.API.Controllers;
 
@@ -15,12 +16,14 @@ public class GamesController : ControllerBase
     private readonly GameRepository _store;
     private readonly AppDbContext _db;
     private readonly GameManagerService _gameManager;
+    private readonly GameMembershipService _membership;
 
-    public GamesController(GameRepository store, AppDbContext db, GameManagerService gameManager)
+    public GamesController(GameRepository store, AppDbContext db, GameManagerService gameManager, GameMembershipService membership)
     {
         _store = store;
         _db = db;
         _gameManager = gameManager;
+        _membership = membership;
     }
 
     // GET /games/getall
@@ -45,22 +48,29 @@ public class GamesController : ControllerBase
     // POST /games/create
     [Authorize]
     [HttpPost("create")]
-    public IActionResult Create(Game game)
+        public IActionResult Create(CreateGameRequest request)
     {
-        // when tracking game host use GetUsername() 
-
-        // game must have at least 1 player slot.
-        if (game.MaxPlayers <= 0)
-            return BadRequest("MaxPlayers must be greater than 0");
-
-        // users cannot create games in the past.
-        if (game.StartTime <= DateTime.UtcNow)
+        if (request.StartTime <= DateTime.UtcNow)
             return BadRequest("StartTime must be in the future");
 
-        // Patikrinam, ar aikštelė egzistuoja
-        var field = _db.SportFields.FirstOrDefault(f => f.Id == game.FootballFieldId);
+        var field = _db.SportFields.FirstOrDefault(f => f.Id == request.FootballFieldId);
         if (field is null)
-            return BadRequest("Football field not found");
+            return BadRequest("Sport field not found");
+
+        if (request.MaxPlayers > field.Capacity)
+            return BadRequest($"MaxPlayers cannot exceed the field capacity ({field.Capacity})");
+
+        var username = GetUsername();
+
+        var game = new Game
+        {
+            FootballFieldId = request.FootballFieldId,
+            StartTime = request.StartTime,
+            MaxPlayers = request.MaxPlayers,
+            CreatedByUsername = username
+        };
+        game.JoinedUsernames.Add(username);
+        _membership.UpdateStatus(game);
 
         var created = _store.Add(game);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
@@ -77,7 +87,7 @@ public class GamesController : ControllerBase
             return NotFound();
 
         if (!_gameManager.IsHost(GetUsername(), game))
-            return Unauthorized();
+            return Forbid();   // 403
 
         var success = _store.Delete(id);
 

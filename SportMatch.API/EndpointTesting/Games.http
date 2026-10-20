@@ -1,5 +1,12 @@
 @SportMatch_HostAddress = http://localhost:5108
 
+### Login (send first)
+# @name login
+POST {{SportMatch_HostAddress}}/Accounts/login
+Content-Type: application/json
+
+{ "username": "karolis123", "password": "test1234" }
+
 ### Get all games
 GET {{SportMatch_HostAddress}}/games/getall
 Accept: application/json
@@ -9,15 +16,89 @@ GET {{SportMatch_HostAddress}}/games/get?id=1
 Accept: application/json
 
 ### Create a game
+# @name create
 POST {{SportMatch_HostAddress}}/games/create
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
 
 {
-  "footballFieldId": 999,
-  "createdByUsername": "lukas",
-  "startTime": "2026-10-09T18:00:00Z",
+  "footballFieldId": 1,
+  "startTime": "2027-01-01T18:00:00Z",
   "maxPlayers": 10
 }
 
-### Delete a game
-DELETE {{SportMatch_HostAddress}}/games/delete?id=1
+### Delete the game you just created
+DELETE {{SportMatch_HostAddress}}/games/delete?id={{create.response.body.$.id}}
+Authorization: Bearer {{login.response.body.$.token}}
+
+### Register second user (200, or 409 if it already exists)
+POST {{SportMatch_HostAddress}}/Accounts/register
+Content-Type: application/json
+
+{ "displayName": "Armandas", "username": "armandas", "password": "test1234" }
+
+### Login as second user
+# @name loginOther
+POST {{SportMatch_HostAddress}}/Accounts/login
+Content-Type: application/json
+
+{ "username": "armandas", "password": "test1234" }
+
+### Delete as NOT the host (expect 403)
+DELETE {{SportMatch_HostAddress}}/games/delete?id={{create.response.body.$.id}}
+Authorization: Bearer {{loginOther.response.body.$.token}}
+
+### TEST: create without token (expect 401)
+POST {{SportMatch_HostAddress}}/games/create
+Content-Type: application/json
+
+{ "footballFieldId": 1, "startTime": "2027-01-01T18:00:00Z", "maxPlayers": 10 }
+
+### TEST: maxPlayers 1, below minimum (expect 400)
+POST {{SportMatch_HostAddress}}/games/create
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{ "footballFieldId": 1, "startTime": "2027-01-01T18:00:00Z", "maxPlayers": 1 }
+
+### TEST: maxPlayers above field capacity (expect 400, capacity message)
+POST {{SportMatch_HostAddress}}/games/create
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{ "footballFieldId": 1, "startTime": "2027-01-01T18:00:00Z", "maxPlayers": 100000 }
+
+### TEST: maxPlayers 2, minimum allowed (expect 201)
+POST {{SportMatch_HostAddress}}/games/create
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{ "footballFieldId": 1, "startTime": "2027-01-01T18:00:00Z", "maxPlayers": 2 }
+
+### TEST: past start time (expect 400)
+POST {{SportMatch_HostAddress}}/games/create
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{ "footballFieldId": 1, "startTime": "2020-01-01T18:00:00Z", "maxPlayers": 10 }
+
+### TEST: unknown field (expect 400, "Sport field not found")
+POST {{SportMatch_HostAddress}}/games/create
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{ "footballFieldId": 9999, "startTime": "2027-01-01T18:00:00Z", "maxPlayers": 10 }
+
+### TEST: over-posting, host and status are ignored (expect 201, host stays karolis123)
+POST {{SportMatch_HostAddress}}/games/create
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
+
+{ "footballFieldId": 1, "createdByUsername": "someoneElse", "status": 2, "startTime": "2027-01-01T18:00:00Z", "maxPlayers": 10 }
+
+### TEST: delete without token (expect 401)
+DELETE {{SportMatch_HostAddress}}/games/delete?id={{create.response.body.$.id}}
+
+### TEST: delete non-existent game (expect 404)
+DELETE {{SportMatch_HostAddress}}/games/delete?id=999999
+Authorization: Bearer {{login.response.body.$.token}}

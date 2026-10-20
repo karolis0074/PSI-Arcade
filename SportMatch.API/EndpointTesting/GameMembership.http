@@ -1,22 +1,30 @@
 @SportMatch_HostAddress = http://localhost:5108
 
+### Login (send first)
+# @name login
+POST {{SportMatch_HostAddress}}/Accounts/login
+Content-Type: application/json
+
+{ "username": "karolis123", "password": "test1234" }
+
 ### Create a game to join
+# @name create
 POST {{SportMatch_HostAddress}}/games/create
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.token}}
 
 {
   "footballFieldId": 1,
-  "createdByUsername": "lukas",
   "startTime": "2027-01-01T18:00:00Z",
   "maxPlayers": 10
 }
 
 ### Join a game
-POST {{SportMatch_HostAddress}}/games/join?id=2&username=tautvydas
+POST {{SportMatch_HostAddress}}/games/join?id={{create.response.body.$.id}}&username=tautvydas
 
 ### Leave a game
-POST {{SportMatch_HostAddress}}/games/leave?id=2&username=tautvydas
+POST {{SportMatch_HostAddress}}/games/leave?id={{create.response.body.$.id}}&username=tautvydas
 
 ### Get free spots of a game
-GET {{SportMatch_HostAddress}}/games/spots?id=2
+GET {{SportMatch_HostAddress}}/games/spots?id={{create.response.body.$.id}}
 Accept: application/json

@@ -22,7 +22,7 @@ public class GameRepository
     public Game? GetById(int id) =>
         _db.Games.FirstOrDefault(g => g.Id == id);
 
-    public List<Game> GetAll() => _db.Games.ToList();
+    public IReadOnlyList<Game> GetAll() => _db.Games.ToList();
 
     public bool Delete(int id)
     {
