@@ -1,7 +1,5 @@
 using SportMatch.API.Data;
 using Microsoft.AspNetCore.Mvc;
-using SportMatch.API.DataTransferObjects.Responses;
-using SportMatch.API.Repositories;
 using SportMatch.API.Results;
 using SportMatch.API.Services;
 
@@ -12,12 +10,10 @@ namespace SportMatch.API.Controllers;
 public class GameMembershipController : ControllerBase
 {
     private readonly GameMembershipService _membership;
-    private readonly GameRepository _store;
 
-    public GameMembershipController(GameMembershipService membership, GameRepository store)
+    public GameMembershipController(GameMembershipService membership)
     {
         _membership = membership;
-        _store = store;
     }
 
     // POST /games/join?id=1&username=tautvydas
@@ -32,7 +28,7 @@ public class GameMembershipController : ControllerBase
         if (result != MembershipResult.Success)
             return BadRequest(result.ToMessage());
 
-        return Ok(_store.GetById(id));
+        return Ok(_membership.GetGame(id));
     }
 
     // POST /games/leave?id=1&username=tautvydas
@@ -47,22 +43,17 @@ public class GameMembershipController : ControllerBase
         if (result != MembershipResult.Success)
             return BadRequest(result.ToMessage());
 
-        return Ok(_store.GetById(id));
+        return Ok(_membership.GetGame(id));
     }
 
     // GET /games/spots?id=1
     [HttpGet("spots")]
     public IActionResult GetSpots([FromQuery] int id)
     {
-        var game = _store.GetById(id);
+        var spots = _membership.GetSpots(id);
 
-        if (game is null)
+        if (spots is null)
             return NotFound(MembershipResult.GameNotFound.ToMessage());
-
-        var spots = new GameSpots();
-        spots.Joined = game.JoinedUsernames.Count;
-        spots.Max = game.MaxPlayers;
-        spots.Free = _membership.GetFreeSpots(game);
 
         return Ok(spots);
     }

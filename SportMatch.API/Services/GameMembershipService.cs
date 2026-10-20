@@ -1,4 +1,5 @@
 using SportMatch.API.Data;
+using SportMatch.API.DataTransferObjects.Responses;
 using SportMatch.API.Models;
 using SportMatch.API.Repositories;
 using SportMatch.API.Results;
@@ -11,16 +12,36 @@ namespace SportMatch.API.Services
         private const double AlmostFullRatio = 0.8;
 
         // DI — GameStore ateina per konstruktorių
-        private readonly GameRepository _store;
+        private readonly GameRepository _gameRepo;
 
-        public GameMembershipService(GameRepository store)
+        public GameMembershipService(GameRepository gameRepo)
         {
-            _store = store;
+            _gameRepo = gameRepo;
+        }
+
+        public Game? GetGame(int gameId)
+        {
+            return _gameRepo.GetById(gameId);
         }
 
         public int GetFreeSpots(Game game)
         {
             return game.MaxPlayers - game.JoinedUsernames.Count;
+        }
+
+        public GameSpots? GetSpots(int gameId)
+        {
+            var game = _gameRepo.GetById(gameId);
+
+            if (game is null)
+                return null;
+
+            var spots = new GameSpots();
+            spots.Joined = game.JoinedUsernames.Count;
+            spots.Max = game.MaxPlayers;
+            spots.Free = GetFreeSpots(game);
+
+            return spots;
         }
 
         public void UpdateStatus(Game game)
@@ -37,7 +58,7 @@ namespace SportMatch.API.Services
 
         public MembershipResult Join(int gameId, string username)
         {
-            var game = _store.GetById(gameId);
+            var game = _gameRepo.GetById(gameId);
 
             if (game is null)
                 return MembershipResult.GameNotFound;
@@ -57,14 +78,14 @@ namespace SportMatch.API.Services
             game.JoinedUsernames.Add(username);
             UpdateStatus(game);
 
-            _store.Update(game);
+            _gameRepo.Update(game);
 
             return MembershipResult.Success;
         }
 
         public MembershipResult Leave(int gameId, string username)
         {
-            var game = _store.GetById(gameId);
+            var game = _gameRepo.GetById(gameId);
 
             if (game is null)
                 return MembershipResult.GameNotFound;
@@ -80,7 +101,7 @@ namespace SportMatch.API.Services
             game.JoinedUsernames.Remove(username);
             UpdateStatus(game);
 
-            _store.Update(game);
+            _gameRepo.Update(game);
 
             return MembershipResult.Success;
         }
