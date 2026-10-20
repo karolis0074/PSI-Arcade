@@ -32,40 +32,17 @@ public class GameStatisticsService
         if (games.Count == 0)
             return 0;
 
-        int totalPlayers = 0;
-
-        foreach (var game in games)
-            totalPlayers += game.JoinedUsernames.Count;
-
-        return (double)totalPlayers / games.Count;
+        return games.Average(game => game.JoinedUsernames.Count);
     }
 
     // id of the field with the most games, null when there are no games
     private int? GetMostPopularFieldId(IReadOnlyList<Game> games)
     {
-        // for every field id, how many games are on that field
-        var gamesPerField = new Dictionary<int, int>();
-
-        foreach (var game in games)
-        {
-            if (gamesPerField.ContainsKey(game.FootballFieldId))
-                gamesPerField[game.FootballFieldId]++;
-            else
-                gamesPerField[game.FootballFieldId] = 1;
-        }
-
-        int? mostPopularFieldId = null;
-        int mostGames = 0;
-
-        foreach (var field in gamesPerField)
-        {
-            if (field.Value > mostGames)
-            {
-                mostPopularFieldId = field.Key;
-                mostGames = field.Value;
-            }
-        }
-
-        return mostPopularFieldId;
+        // group the games by field, the largest group is the most popular field
+        return games
+            .GroupBy(game => game.FootballFieldId)
+            .OrderByDescending(group => group.Count())
+            .Select(group => (int?)group.Key)
+            .FirstOrDefault();
     }
 }
