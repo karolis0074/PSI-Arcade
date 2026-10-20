@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportMatch.API.Services;
-using SportMatch.API.Repositories;
-using SportMatch.API.Models;
 using SportMatch.API.Results;
 using SportMatch.API.DataTransferObjects.Requests;
 
@@ -12,18 +10,13 @@ namespace SportMatch.API.Controllers
     [Route("[controller]")]
     public class AccountsController : ControllerBase
     {
-        private readonly AccountRepository _db;
         private readonly AccountService _accountService;
         private readonly AuthService _authService;
-        private readonly CryptService _cryptService;
 
-        public AccountsController(AccountRepository db, AccountService accountService,
-            AuthService authService, CryptService cryptService)
+        public AccountsController(AccountService accountService, AuthService authService)
         {
-            _db = db;
             _accountService = accountService;
             _authService = authService;
-            _cryptService = cryptService;
         }
 
 
@@ -32,11 +25,11 @@ namespace SportMatch.API.Controllers
         [HttpGet("getname")]
         public IActionResult GetDisplayName([FromQuery] string username)
         {
-            var account = _db.GetAccount(username);
-            if (account == null)
+            var displayName = _accountService.GetDisplayName(username);
+            if (displayName == null)
                 return NotFound();
 
-            return Ok(new { account.DisplayName });
+            return Ok(new { DisplayName = displayName });
         }
 
         [HttpPost("register")]
@@ -60,14 +53,11 @@ namespace SportMatch.API.Controllers
         [HttpPost("login")]
         public IActionResult Login(LoginRequest request)
         {
-            Account account = _db.GetAccount(request.Username);
+            var token = _authService.Login(request.Username, request.Password);
+            if (token == null)
+                return Unauthorized();
 
-            if (_authService.CheckLogin(account, request.Password))
-            {
-                return Ok(new { token = _cryptService.GenerateToken(account) }); // returns jwt token
-            }
-
-            return Unauthorized();
+            return Ok(new { token }); // returns jwt token
         }
 
         [Authorize]
@@ -108,7 +98,7 @@ namespace SportMatch.API.Controllers
         [HttpDelete("delete")]
         public IActionResult DeleteAccount()
         {
-            var result = _db.DeleteAccount(GetUsername());
+            var result = _accountService.DeleteAccount(GetUsername());
 
             return result switch
             {

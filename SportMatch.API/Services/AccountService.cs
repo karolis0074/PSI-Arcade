@@ -6,13 +6,19 @@ namespace SportMatch.API.Services
 {
     public class AccountService
     {
-        private readonly AccountRepository _db;
+        private readonly AccountRepository _accountRepo;
         private readonly CryptService _crypt;
 
-        public AccountService(AccountRepository db, CryptService crypt)
+        public AccountService(AccountRepository accountRepo, CryptService crypt)
         {
-            _db = db;
+            _accountRepo = accountRepo;
             _crypt = crypt;
+        }
+
+        public string? GetDisplayName(string username)
+        {
+            var account = _accountRepo.GetAccount(username);
+            return account?.DisplayName;
         }
 
         public RegisterResult Register(string displayName, string username, string password)
@@ -24,7 +30,7 @@ namespace SportMatch.API.Services
 
             var passwordHash = _crypt.Hash(password);
             var account = new Account(displayName, username, passwordHash);
-            return _db.AddAccount(account);
+            return _accountRepo.AddAccount(account);
         }
 
         public AccountResult ChangePassword(Account? account, string newPassword)
@@ -35,13 +41,13 @@ namespace SportMatch.API.Services
                 return AccountResult.NotFound;
 
             account.PasswordHash = _crypt.Hash(newPassword);
-            _db.UpdateAccount(account);
+            _accountRepo.UpdateAccount(account);
             return AccountResult.Success;
         }
 
         public AccountResult ChangePassword(string username, string newPassword)
         {
-            var account = _db.GetAccount(username);
+            var account = _accountRepo.GetAccount(username);
             return ChangePassword(account, newPassword);
         }
 
@@ -53,14 +59,19 @@ namespace SportMatch.API.Services
                 return AccountResult.NotFound;
 
             account.DisplayName = newName;
-            _db.UpdateAccount(account);
+            _accountRepo.UpdateAccount(account);
             return AccountResult.Success;
         }
 
         public AccountResult ChangeDisplayName(string username, string newName)
         {
-            var account = _db.GetAccount(username);
+            var account = _accountRepo.GetAccount(username);
             return ChangeDisplayName(account, newName);
+        }
+
+        public AccountResult DeleteAccount(string username)
+        {
+            return _accountRepo.DeleteAccount(username);
         }
     }
 }
