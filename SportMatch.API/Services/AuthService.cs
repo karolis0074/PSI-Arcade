@@ -5,19 +5,13 @@ namespace SportMatch.API.Services
 {
     public class AuthService
     {
-        private AccountRepository _db;
-        private CryptService _crypt;
+        private readonly AccountRepository _db;
+        private readonly CryptService _crypt;
 
-        public AuthService()
-        {
-            _db = AccountRepository.GetInstance();
-            _crypt = new CryptService();
-        }
-
-        public AuthService(AccountRepository db)
+        public AuthService(AccountRepository db, CryptService crypt)
         {
             _db = db;
-            _crypt = new CryptService();
+            _crypt = crypt;
         }
 
         public bool CheckLogin(Account account, string password)

@@ -12,10 +12,19 @@ namespace SportMatch.API.Controllers
     [Route("[controller]")]
     public class AccountsController : ControllerBase
     {
-        private AccountRepository _db = AccountRepository.GetInstance();
-        private AccountService _accountService = new AccountService();
-        private AuthService _authService = new AuthService();
-        private CryptService _cryptService = new CryptService();
+        private readonly AccountRepository _db;
+        private readonly AccountService _accountService;
+        private readonly AuthService _authService;
+        private readonly CryptService _cryptService;
+
+        public AccountsController(AccountRepository db, AccountService accountService,
+            AuthService authService, CryptService cryptService)
+        {
+            _db = db;
+            _accountService = accountService;
+            _authService = authService;
+            _cryptService = cryptService;
+        }
 
 
         private string GetUsername() => User.Identity!.Name!;
