@@ -10,26 +10,24 @@ namespace SportMatch.API.Controllers;
 [Route("games")]
 public class GamesController : ControllerBase
 {
-    private string GetUsername() => User.Identity!.Name!;
-    private readonly GameManagerService _gameManager;
+    private readonly GameManagerService _gameManagerService;
 
-    public GamesController(GameManagerService gameManager)
+    public GamesController(GameManagerService gameManagerService)
     {
-        _gameManager = gameManager;
+        _gameManagerService = gameManagerService;
     }
+
+    private string GetUsername() => User.Identity!.Name!;
 
     // GET /games/getall
     [HttpGet("getall")]
-    public IActionResult GetAll()
-    {
-        return Ok(_gameManager.GetAll());
-    }
+    public IActionResult GetAll() => Ok(_gameManagerService.GetAll());
 
     // GET /games/get?id=1
     [HttpGet("get")]
     public IActionResult GetById([FromQuery] int id)
     {
-        var game = _gameManager.GetById(id);
+        var game = _gameManagerService.GetById(id);
 
         if (game is null)
             return NotFound();
@@ -42,7 +40,7 @@ public class GamesController : ControllerBase
     [HttpPost("create")]
     public IActionResult Create(CreateGameRequest request)
     {
-        var result = _gameManager.Create(GetUsername(), request);
+        var result = _gameManagerService.Create(GetUsername(), request);
 
         if (result.Game is null)
             return BadRequest(result.Error);
@@ -55,7 +53,7 @@ public class GamesController : ControllerBase
     [HttpDelete("delete")]
     public IActionResult Delete([FromQuery] int id)
     {
-        var result = _gameManager.Delete(id, GetUsername());
+        var result = _gameManagerService.Delete(id, GetUsername());
 
         return result switch
         {

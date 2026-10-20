@@ -7,17 +7,14 @@ namespace SportMatch.API.Controllers;
 [Route("games")]
 public class GameStatisticsController : ControllerBase
 {
-    private readonly GameStatisticsService _statistics;
+    private readonly GameStatisticsService _statisticsService;
 
-    public GameStatisticsController(GameStatisticsService statistics)
+    public GameStatisticsController(GameStatisticsService statisticsService)
     {
-        _statistics = statistics;
+        _statisticsService = statisticsService;
     }
 
     // GET /games/statistics
     [HttpGet("statistics")]
-    public IActionResult GetStatistics()
-    {
-        return Ok(_statistics.GetOverview());
-    }
+    public IActionResult GetStatistics() => Ok(_statisticsService.GetOverview());
 }
