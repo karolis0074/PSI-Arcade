@@ -38,7 +38,7 @@ public class SportFieldRepository : IEnumerable<SportField>
     public SportField? GetById(int id) =>
         _db.SportFields.FirstOrDefault(f => f.Id == id);
 
-    public IReadOnlyList<SportField> Search(string? city, string? gameType, string? fieldType)
+    public IReadOnlyList<SportField> Search(string? city = null, string? gameType = null, string? fieldType = null)
     {
         var query = _db.SportFields.AsQueryable();
 
