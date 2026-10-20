@@ -1,121 +1,109 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SportMatch.API.Services;
-using SportMatch.API.Repositories;
-using SportMatch.API.Models;
-using SportMatch.API.Results;
 using SportMatch.API.DataTransferObjects.Requests;
+using SportMatch.API.Results;
+using SportMatch.API.Services;
 
-namespace SportMatch.API.Controllers
+namespace SportMatch.API.Controllers;
+
+[ApiController]
+[Route("accounts")]
+public class AccountsController : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class AccountsController : ControllerBase
+    private readonly AccountService _accountService;
+    private readonly AuthService _authService;
+
+    public AccountsController(AccountService accountService, AuthService authService)
     {
-        private readonly AccountRepository _db;
-        private readonly AccountService _accountService;
-        private readonly AuthService _authService;
-        private readonly CryptService _cryptService;
+        _accountService = accountService;
+        _authService = authService;
+    }
 
-        public AccountsController(AccountRepository db, AccountService accountService,
-            AuthService authService, CryptService cryptService)
+    private string GetUsername() => User.Identity!.Name!;
+
+    [HttpGet("getname")]
+    public IActionResult GetDisplayName([FromQuery] string username)
+    {
+        var displayName = _accountService.GetDisplayName(username);
+        if (displayName is null)
+            return NotFound();
+
+        return Ok(new { DisplayName = displayName });
+    }
+
+    [HttpPost("register")]
+    public IActionResult Register(RegisterRequest request)
+    {
+        var result = _accountService.Register(
+            request.DisplayName,
+            request.Username,
+            request.Password
+        );
+
+        return result switch
         {
-            _db = db;
-            _accountService = accountService;
-            _authService = authService;
-            _cryptService = cryptService;
-        }
+            RegisterResult.Success => Ok(),
+            RegisterResult.UsernameTaken => Conflict(),
+            RegisterResult.InvalidInput => BadRequest(),
+            _ => StatusCode(500)
+        };
+    }
 
-
-        private string GetUsername() => User.Identity!.Name!;
-             
-        [HttpGet("getname")]
-        public IActionResult GetDisplayName([FromQuery] string username)
-        {
-            var account = _db.GetAccount(username);
-            if (account == null)
-                return NotFound();
-
-            return Ok(new { account.DisplayName });
-        }
-
-        [HttpPost("register")]
-        public IActionResult Register(RegisterRequest request)
-        {
-            var result = _accountService.Register(
-                request.DisplayName,
-                request.Username,
-                request.Password
-            );
-
-            return result switch
-            {
-                RegisterResult.Success => Ok(),
-                RegisterResult.UsernameTaken => Conflict(),
-                RegisterResult.InvalidInput => BadRequest(),
-                _ => StatusCode(500)
-            };
-        }
-
-        [HttpPost("login")]
-        public IActionResult Login(LoginRequest request)
-        {
-            Account account = _db.GetAccount(request.Username);
-
-            if (_authService.CheckLogin(account, request.Password))
-            {
-                return Ok(new { token = _cryptService.GenerateToken(account) }); // returns jwt token
-            }
-
+    [HttpPost("login")]
+    public IActionResult Login(LoginRequest request)
+    {
+        var token = _authService.Login(request.Username, request.Password);
+        if (token is null)
             return Unauthorized();
-        }
 
-        [Authorize]
-        [HttpPost("changename")]
-        public IActionResult ChangeDisplayName(ChangeDisplayNameRequest request)
+        return Ok(new { token }); // returns jwt token
+    }
+
+    [Authorize]
+    [HttpPost("changename")]
+    public IActionResult ChangeDisplayName(ChangeDisplayNameRequest request)
+    {
+        var result = _accountService.ChangeDisplayName(GetUsername(), request.NewName);
+
+        return result switch
         {
-            var result = _accountService.ChangeDisplayName(GetUsername(), request.NewName);
+            AccountResult.Success => Ok(),
+            AccountResult.NotFound => NotFound(),
+            AccountResult.InvalidInput => BadRequest(),
+            _ => StatusCode(500)
+        };
+    }
 
-            return result switch
-            {
-                AccountResult.Success => Ok(),
-                AccountResult.NotFound => NotFound(),
-                AccountResult.InvalidInput => BadRequest(),
-                _ => StatusCode(500)
-            };
-        }
+    [Authorize]
+    [HttpPost("changepass")]
+    public IActionResult ChangePassword(ChangePasswordRequest request)
+    {
+        var username = GetUsername();
+        if (!_authService.CheckLogin(username, request.OldPassword))
+            return Unauthorized();
 
-        [Authorize]
-        [HttpPost("changepass")]
-        public IActionResult ChangePassword(ChangePasswordRequest request)
+        var result = _accountService.ChangePassword(username, request.NewPassword);
+
+        return result switch
         {
-            var username = GetUsername();
-            if (!_authService.CheckLogin(username, request.OldPassword))
-                return Unauthorized();
+            AccountResult.Success => Ok(),
+            AccountResult.NotFound => NotFound(),
+            AccountResult.InvalidInput => BadRequest(),
+            _ => StatusCode(500)
+        };
+    }
 
-            var result = _accountService.ChangePassword(username, request.NewPassword);
+    [Authorize]
+    [HttpDelete("delete")]
+    public IActionResult DeleteAccount()
+    {
+        var result = _accountService.DeleteAccount(GetUsername());
 
-            return result switch
-            {
-                AccountResult.Success => Ok(),
-                AccountResult.NotFound => NotFound(),
-                AccountResult.InvalidInput => BadRequest(),
-                _ => StatusCode(500)
-            };
-        }
-
-        [Authorize]
-        [HttpDelete("delete")]
-        public IActionResult DeleteAccount()
+        return result switch
         {
-            var result = _db.DeleteAccount(GetUsername());
-
-            return result switch
-            {
-                AccountResult.Success => Ok(),
-                AccountResult.NotFound => NotFound(),
-                _ => StatusCode(500)
-            };
-        }
+            AccountResult.Success => Ok(),
+            AccountResult.NotFound => NotFound(),
+            _ => StatusCode(500)
+        };
     }
 }

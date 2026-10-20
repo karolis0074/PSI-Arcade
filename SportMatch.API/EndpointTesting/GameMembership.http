@@ -2,7 +2,7 @@
 
 ### Login (send first)
 # @name login
-POST {{SportMatch_HostAddress}}/Accounts/login
+POST {{SportMatch_HostAddress}}/accounts/login
 Content-Type: application/json
 
 { "username": "karolis123", "password": "test1234" }

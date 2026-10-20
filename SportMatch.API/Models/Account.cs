@@ -1,25 +1,23 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-namespace SportMatch.API.Models
+namespace SportMatch.API.Models;
+
+public class Account
 {
-    public class Account
+    public string DisplayName { get; set; }
+    public string Username { get; private set; }
+
+    [JsonIgnore] public string PasswordHash { get; set; }
+
+    public Account(string displayName, string username, string passwordHash)
     {
-        public string DisplayName { get; set; }
-        public string Username { get; private set; }
+        if (string.IsNullOrWhiteSpace(username) ||
+            string.IsNullOrWhiteSpace(passwordHash))
+            throw new ArgumentNullException("Account username or password is invalid.");
 
-        [JsonIgnore] public string PasswordHash { get; set; }
-        
+        DisplayName = displayName;
+        Username = username;
 
-        public Account(string displayName, string username, string passwordHash)
-        {
-            if (string.IsNullOrWhiteSpace(username) || 
-                string.IsNullOrWhiteSpace(passwordHash))
-                throw new ArgumentNullException("Account username or password is invalid.");
-
-            DisplayName = displayName;
-            Username = username;
-
-            PasswordHash = passwordHash;
-        }
+        PasswordHash = passwordHash;
     }
 }

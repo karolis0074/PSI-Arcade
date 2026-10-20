@@ -1,88 +1,86 @@
-using SportMatch.API.Data;
+using SportMatch.API.DataTransferObjects.Responses;
 using SportMatch.API.Models;
 using SportMatch.API.Repositories;
 using SportMatch.API.Results;
 
-namespace SportMatch.API.Services
+namespace SportMatch.API.Services;
+
+public class GameMembershipService
 {
-    public class GameMembershipService
+    // DI — GameRepository comes through the constructor
+    private readonly GameRepository _gameRepo;
+
+    public GameMembershipService(GameRepository gameRepo)
     {
-        // game is almost full when 80% of spots are taken
-        private const double AlmostFullRatio = 0.8;
+        _gameRepo = gameRepo;
+    }
 
-        // DI — GameStore ateina per konstruktorių
-        private readonly GameRepository _store;
+    public Game? GetGame(int gameId) => _gameRepo.GetById(gameId);
 
-        public GameMembershipService(GameRepository store)
-        {
-            _store = store;
-        }
+    public int GetFreeSpots(Game game) => game.MaxPlayers - game.JoinedUsernames.Count;
 
-        public int GetFreeSpots(Game game)
-        {
-            return game.MaxPlayers - game.JoinedUsernames.Count;
-        }
+    public GameSpots? GetSpots(int gameId)
+    {
+        var game = _gameRepo.GetById(gameId);
 
-        public void UpdateStatus(Game game)
-        {
-            int joined = game.JoinedUsernames.Count;
+        if (game is null)
+            return null;
 
-            if (joined >= game.MaxPlayers)
-                game.Status = GameStatus.Full;
-            else if ((double)joined / game.MaxPlayers >= AlmostFullRatio)
-                game.Status = GameStatus.AlmostFull;
-            else
-                game.Status = GameStatus.Open;
-        }
+        var spots = new GameSpots();
+        spots.Joined = game.JoinedUsernames.Count;
+        spots.Max = game.MaxPlayers;
+        spots.Free = GetFreeSpots(game);
 
-        public MembershipResult Join(int gameId, string username)
-        {
-            var game = _store.GetById(gameId);
+        return spots;
+    }
 
-            if (game is null)
-                return MembershipResult.GameNotFound;
+    public MembershipResult Join(int gameId, string username)
+    {
+        var game = _gameRepo.GetById(gameId);
 
-            // can't join a game that already started
-            if (game.StartTime <= DateTime.UtcNow)
-                return MembershipResult.GameStarted;
+        if (game is null)
+            return MembershipResult.GameNotFound;
 
-            // user can't join the same game twice
-            if (game.JoinedUsernames.Contains(username))
-                return MembershipResult.AlreadyJoined;
+        // can't join a game that already started
+        if (game.StartTime <= DateTime.UtcNow)
+            return MembershipResult.GameStarted;
 
-            // no free spots left
-            if (GetFreeSpots(game) <= 0)
-                return MembershipResult.GameFull;
+        // user can't join the same game twice
+        if (game.JoinedUsernames.Contains(username))
+            return MembershipResult.AlreadyJoined;
 
-            game.JoinedUsernames.Add(username);
-            UpdateStatus(game);
+        // no free spots left
+        if (GetFreeSpots(game) <= 0)
+            return MembershipResult.GameFull;
 
-            _store.Update(game);
+        game.JoinedUsernames.Add(username);
+        game.UpdateStatus();
 
-            return MembershipResult.Success;
-        }
+        _gameRepo.Update(game);
 
-        public MembershipResult Leave(int gameId, string username)
-        {
-            var game = _store.GetById(gameId);
+        return MembershipResult.Success;
+    }
 
-            if (game is null)
-                return MembershipResult.GameNotFound;
+    public MembershipResult Leave(int gameId, string username)
+    {
+        var game = _gameRepo.GetById(gameId);
 
-             // can't leave a game that already started
-            if (game.StartTime <= DateTime.UtcNow)
-                return MembershipResult.GameStarted;
+        if (game is null)
+            return MembershipResult.GameNotFound;
 
-            // user has to be in the game to leave it
-            if (!game.JoinedUsernames.Contains(username))
-                return MembershipResult.NotJoined;
+        // can't leave a game that already started
+        if (game.StartTime <= DateTime.UtcNow)
+            return MembershipResult.GameStarted;
 
-            game.JoinedUsernames.Remove(username);
-            UpdateStatus(game);
+        // user has to be in the game to leave it
+        if (!game.JoinedUsernames.Contains(username))
+            return MembershipResult.NotJoined;
 
-            _store.Update(game);
+        game.JoinedUsernames.Remove(username);
+        game.UpdateStatus();
 
-            return MembershipResult.Success;
-        }
+        _gameRepo.Update(game);
+
+        return MembershipResult.Success;
     }
 }
