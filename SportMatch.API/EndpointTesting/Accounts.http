@@ -1,7 +1,7 @@
-@HostAddress = http://localhost:5108
+@SportMatch_HostAddress = http://localhost:5108
 
 ### Register
-POST {{HostAddress}}/Accounts/register
+POST {{SportMatch_HostAddress}}/accounts/register
 Content-Type: application/json
 
 {
@@ -12,7 +12,7 @@ Content-Type: application/json
 
 ### Login (captures the token for requests below)
 # @name login
-POST {{HostAddress}}/Accounts/login
+POST {{SportMatch_HostAddress}}/accounts/login
 Content-Type: application/json
 
 {
@@ -21,10 +21,10 @@ Content-Type: application/json
 }
 
 ### Get display name (no auth needed)
-GET {{HostAddress}}/Accounts/getname?username=karolis123
+GET {{SportMatch_HostAddress}}/accounts/getname?username=karolis123
 
 ### Change display name (requires token)
-POST {{HostAddress}}/Accounts/changename
+POST {{SportMatch_HostAddress}}/accounts/changename
 Authorization: Bearer {{login.response.body.$.token}}
 Content-Type: application/json
 
@@ -33,7 +33,7 @@ Content-Type: application/json
 }
 
 ### Change password (requires token)
-POST {{HostAddress}}/Accounts/changepass
+POST {{SportMatch_HostAddress}}/accounts/changepass
 Authorization: Bearer {{login.response.body.$.token}}
 Content-Type: application/json
 
@@ -43,6 +43,6 @@ Content-Type: application/json
 }
 
 ### Delete account (requires token)
-DELETE {{HostAddress}}/Accounts/delete
+DELETE {{SportMatch_HostAddress}}/accounts/delete
 Authorization: Bearer {{login.response.body.$.token}}
 ###

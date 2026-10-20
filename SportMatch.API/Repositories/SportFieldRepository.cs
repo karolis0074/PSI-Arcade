@@ -33,7 +33,7 @@ public class SportFieldRepository : IEnumerable<SportField>
         }
     }
 
-    public List<SportField> GetAll() => _db.SportFields.ToList();
+    public IReadOnlyList<SportField> GetAll() => _db.SportFields.ToList();
 
     public SportField? GetById(int id) =>
         _db.SportFields.FirstOrDefault(f => f.Id == id);

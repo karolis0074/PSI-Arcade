@@ -9,7 +9,7 @@ public class SportField
     public string GameType { get; set; } = string.Empty;    // Football, Basketball, etc.
     public string FieldType { get; set; } = string.Empty;   // S, M, L
     public int Capacity { get; set; }
-    public string? Surface { get; set; }                    // nullable — JSON turi null
+    public string? Surface { get; set; }                    // nullable, the JSON has null here
     public string WeekdayOpenTime { get; set; } = string.Empty;
     public string WeekdayCloseTime { get; set; } = string.Empty;
     public string WeekendOpenTime { get; set; } = string.Empty;

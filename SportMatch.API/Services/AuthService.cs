@@ -1,34 +1,42 @@
-﻿using SportMatch.API.Models;
+using SportMatch.API.Models;
 using SportMatch.API.Repositories;
 
-namespace SportMatch.API.Services
+namespace SportMatch.API.Services;
+
+public class AuthService
 {
-    public class AuthService
+    private readonly AccountRepository _accountRepo;
+    private readonly CryptService _cryptService;
+
+    public AuthService(AccountRepository accountRepo, CryptService cryptService)
     {
-        private readonly AccountRepository _db;
-        private readonly CryptService _crypt;
+        _accountRepo = accountRepo;
+        _cryptService = cryptService;
+    }
 
-        public AuthService(AccountRepository db, CryptService crypt)
-        {
-            _db = db;
-            _crypt = crypt;
-        }
-
-        public bool CheckLogin(Account account, string password)
-        {
-            if (account == null || password == null)
-                return false;
-
-            if (_crypt.VerifyHash(password, account.PasswordHash))
-                return true;
-
+    public bool CheckLogin(Account account, string password)
+    {
+        if (account is null || password is null)
             return false;
-        }
 
-        public bool CheckLogin(string username, string password)
-        {
-            var account = _db.GetAccount(username);
-            return CheckLogin(account, password);
-        }
+        if (_cryptService.VerifyHash(password, account.PasswordHash))
+            return true;
+
+        return false;
+    }
+
+    public bool CheckLogin(string username, string password)
+    {
+        var account = _accountRepo.GetByUsername(username);
+        return CheckLogin(account, password);
+    }
+
+    public string? Login(string username, string password)
+    {
+        var account = _accountRepo.GetByUsername(username);
+        if (account is null || !CheckLogin(account, password))
+            return null;
+
+        return _cryptService.GenerateToken(account);
     }
 }
