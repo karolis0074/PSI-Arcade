@@ -8,16 +8,16 @@ namespace SportMatch.API.Repositories;
 
 public class AccountRepository
 {
-    private readonly AppDbContext _db;
+    private readonly AppDbContext _dbContext;
 
-    public AccountRepository(AppDbContext db)
+    public AccountRepository(AppDbContext dbContext)
     {
-        _db = db;
+        _dbContext = dbContext;
     }
 
     // username column is NOCASE, so this lookup is case-insensitive
     public Account? GetByUsername(string username) =>
-        _db.Accounts.FirstOrDefault(a => a.Username == username);
+        _dbContext.Accounts.FirstOrDefault(a => a.Username == username);
 
     public RegisterResult Add(Account account)
     {
@@ -26,11 +26,11 @@ public class AccountRepository
         if (GetByUsername(account.Username) is not null)
             return RegisterResult.UsernameTaken;
 
-        _db.Accounts.Add(account);
+        _dbContext.Accounts.Add(account);
 
         try
         {
-            _db.SaveChanges();
+            _dbContext.SaveChanges();
         }
         catch (DbUpdateException ex) when (ex.InnerException is SqliteException { SqliteErrorCode: 19 })
         {
@@ -42,8 +42,8 @@ public class AccountRepository
 
     public void Update(Account account)
     {
-        _db.Accounts.Update(account);
-        _db.SaveChanges();
+        _dbContext.Accounts.Update(account);
+        _dbContext.SaveChanges();
     }
 
     public AccountResult Delete(string username)
@@ -52,8 +52,8 @@ public class AccountRepository
         if (account is null)
             return AccountResult.NotFound;
 
-        _db.Accounts.Remove(account);
-        _db.SaveChanges();
+        _dbContext.Accounts.Remove(account);
+        _dbContext.SaveChanges();
         return AccountResult.Success;
     }
 }

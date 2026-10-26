@@ -7,17 +7,17 @@ namespace SportMatch.API.Repositories;
 
 public class SportFieldRepository : IEnumerable<SportField>
 {
-    private readonly AppDbContext _db;
+    private readonly AppDbContext _dbContext;
 
-    public SportFieldRepository(AppDbContext db)
+    public SportFieldRepository(AppDbContext dbContext)
     {
-        _db = db;
+        _dbContext = dbContext;
         SeedIfEmpty();
     }
 
     private void SeedIfEmpty()
     {
-        if (_db.SportFields.Any())
+        if (_dbContext.SportFields.Any())
             return;
 
         using var stream = File.OpenRead("Data/sportfields.json");
@@ -28,19 +28,19 @@ public class SportFieldRepository : IEnumerable<SportField>
 
         if (fields is not null)
         {
-            _db.SportFields.AddRange(fields);
-            _db.SaveChanges();
+            _dbContext.SportFields.AddRange(fields);
+            _dbContext.SaveChanges();
         }
     }
 
-    public IReadOnlyList<SportField> GetAll() => _db.SportFields.ToList();
+    public IReadOnlyList<SportField> GetAll() => _dbContext.SportFields.ToList();
 
     public SportField? GetById(int id) =>
-        _db.SportFields.FirstOrDefault(f => f.Id == id);
+        _dbContext.SportFields.FirstOrDefault(f => f.Id == id);
 
     public IReadOnlyList<SportField> Search(string? city = null, string? gameType = null, string? fieldType = null)
     {
-        var query = _db.SportFields.AsQueryable();
+        var query = _dbContext.SportFields.AsQueryable();
 
         if (!string.IsNullOrEmpty(city))
             query = query.Where(f => f.City.ToLower() == city.ToLower());
@@ -55,7 +55,7 @@ public class SportFieldRepository : IEnumerable<SportField>
     }
 
     public IEnumerator<SportField> GetEnumerator() =>
-        _db.SportFields.AsEnumerable().GetEnumerator();
+        _dbContext.SportFields.AsEnumerable().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

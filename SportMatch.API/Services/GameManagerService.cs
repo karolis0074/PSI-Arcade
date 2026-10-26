@@ -7,25 +7,25 @@ namespace SportMatch.API.Services;
 
 public class GameManagerService
 {
-    private readonly GameRepository _gameRepo;
-    private readonly SportFieldRepository _sportFieldRepo;
+    private readonly GameRepository _gameRepository;
+    private readonly SportFieldRepository _sportFieldRepository;
 
-    public GameManagerService(GameRepository gameRepo, SportFieldRepository sportFieldRepo)
+    public GameManagerService(GameRepository gameRepository, SportFieldRepository sportFieldRepository)
     {
-        _gameRepo = gameRepo;
-        _sportFieldRepo = sportFieldRepo;
+        _gameRepository = gameRepository;
+        _sportFieldRepository = sportFieldRepository;
     }
 
-    public IReadOnlyList<Game> GetAll() => _gameRepo.GetAll();
+    public IReadOnlyList<Game> GetAll() => _gameRepository.GetAll();
 
-    public Game? GetById(int id) => _gameRepo.GetById(id);
+    public Game? GetById(int id) => _gameRepository.GetById(id);
 
     public CreateGameResult Create(string username, CreateGameRequest request)
     {
         if (request.StartTime <= DateTime.UtcNow)
             return new CreateGameResult(null, "StartTime must be in the future");
 
-        var field = _sportFieldRepo.GetById(request.FootballFieldId);
+        var field = _sportFieldRepository.GetById(request.FootballFieldId);
         if (field is null)
             return new CreateGameResult(null, "Sport field not found");
 
@@ -42,12 +42,12 @@ public class GameManagerService
         game.JoinedUsernames.Add(username);
         game.UpdateStatus();
 
-        return new CreateGameResult(_gameRepo.Add(game), null);
+        return new CreateGameResult(_gameRepository.Add(game), null);
     }
 
     public DeleteGameResult Delete(int id, string username)
     {
-        var game = _gameRepo.GetById(id);
+        var game = _gameRepository.GetById(id);
 
         if (game is null)
             return DeleteGameResult.NotFound;
@@ -55,7 +55,7 @@ public class GameManagerService
         if (!IsHost(username, game))
             return DeleteGameResult.NotHost;
 
-        if (!_gameRepo.Delete(id))
+        if (!_gameRepository.Delete(id))
             return DeleteGameResult.NotFound;
 
         return DeleteGameResult.Success;
@@ -63,7 +63,7 @@ public class GameManagerService
 
     public string? GetHostUsername(Game game) => game?.CreatedByUsername;
 
-    public string? GetHostUsername(int id) => GetHostUsername(_gameRepo.GetById(id));
+    public string? GetHostUsername(int id) => GetHostUsername(_gameRepository.GetById(id));
 
     public bool IsHost(string username, Game game)
     {
@@ -77,5 +77,5 @@ public class GameManagerService
         return hostUsername.Equals(username);
     }
 
-    public bool IsHost(string username, int gameId) => IsHost(username, _gameRepo.GetById(gameId));
+    public bool IsHost(string username, int gameId) => IsHost(username, _gameRepository.GetById(gameId));
 }
