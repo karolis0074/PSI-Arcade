@@ -8,20 +8,20 @@ namespace SportMatch.API.Services;
 public class GameMembershipService
 {
     // DI — GameRepository comes through the constructor
-    private readonly GameRepository _gameRepo;
+    private readonly GameRepository _gameRepository;
 
-    public GameMembershipService(GameRepository gameRepo)
+    public GameMembershipService(GameRepository gameRepository)
     {
-        _gameRepo = gameRepo;
+        _gameRepository = gameRepository;
     }
 
-    public Game? GetGame(int gameId) => _gameRepo.GetById(gameId);
+    public Game? GetGame(int gameId) => _gameRepository.GetById(gameId);
 
     public int GetFreeSpots(Game game) => game.MaxPlayers - game.JoinedUsernames.Count;
 
     public GameSpots? GetSpots(int gameId)
     {
-        var game = _gameRepo.GetById(gameId);
+        var game = _gameRepository.GetById(gameId);
 
         if (game is null)
             return null;
@@ -36,7 +36,7 @@ public class GameMembershipService
 
     public MembershipResult Join(int gameId, string username)
     {
-        var game = _gameRepo.GetById(gameId);
+        var game = _gameRepository.GetById(gameId);
 
         if (game is null)
             return MembershipResult.GameNotFound;
@@ -56,14 +56,14 @@ public class GameMembershipService
         game.JoinedUsernames.Add(username);
         game.UpdateStatus();
 
-        _gameRepo.Update(game);
+        _gameRepository.Update(game);
 
         return MembershipResult.Success;
     }
 
     public MembershipResult Leave(int gameId, string username)
     {
-        var game = _gameRepo.GetById(gameId);
+        var game = _gameRepository.GetById(gameId);
 
         if (game is null)
             return MembershipResult.GameNotFound;
@@ -79,7 +79,7 @@ public class GameMembershipService
         game.JoinedUsernames.Remove(username);
         game.UpdateStatus();
 
-        _gameRepo.Update(game);
+        _gameRepository.Update(game);
 
         return MembershipResult.Success;
     }

@@ -46,7 +46,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 
-    var sportStore = scope.ServiceProvider.GetRequiredService<SportFieldRepository>();
+    var sportFieldRepository = scope.ServiceProvider.GetRequiredService<SportFieldRepository>();
 }
 
 if (app.Environment.IsDevelopment())
