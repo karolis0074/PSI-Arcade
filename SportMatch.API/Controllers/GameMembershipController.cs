@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SportMatch.API.Extensions;
 using SportMatch.API.Results;
 using SportMatch.API.Services;
 
