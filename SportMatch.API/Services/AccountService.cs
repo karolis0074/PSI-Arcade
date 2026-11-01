@@ -15,21 +15,14 @@ public class AccountService
         _cryptService = cryptService;
     }
 
-    public string? GetDisplayName(string username)
+    public RegisterResult Register(string username, string password)
     {
-        var account = _accountRepo.GetByUsername(username);
-        return account?.DisplayName;
-    }
-
-    public RegisterResult Register(string displayName, string username, string password)
-    {
-        if (string.IsNullOrWhiteSpace(displayName) ||
-            string.IsNullOrWhiteSpace(username) ||
+        if (string.IsNullOrWhiteSpace(username) ||
             string.IsNullOrWhiteSpace(password))
             return RegisterResult.InvalidInput;
 
         var passwordHash = _cryptService.Hash(password);
-        var account = new Account(displayName, username, passwordHash);
+        var account = new Account { Username = username, PasswordHash = passwordHash };
         return _accountRepo.Add(account);
     }
 
@@ -49,24 +42,6 @@ public class AccountService
     {
         var account = _accountRepo.GetByUsername(username);
         return ChangePassword(account, newPassword);
-    }
-
-    public AccountResult ChangeDisplayName(Account? account, string newName)
-    {
-        if (string.IsNullOrWhiteSpace(newName))
-            return AccountResult.InvalidInput;
-        if (account is null)
-            return AccountResult.NotFound;
-
-        account.DisplayName = newName;
-        _accountRepo.Update(account);
-        return AccountResult.Success;
-    }
-
-    public AccountResult ChangeDisplayName(string username, string newName)
-    {
-        var account = _accountRepo.GetByUsername(username);
-        return ChangeDisplayName(account, newName);
     }
 
     public AccountResult DeleteAccount(string username) => _accountRepo.Delete(username);

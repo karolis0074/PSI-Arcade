@@ -5,7 +5,6 @@ POST {{SportMatch_HostAddress}}/accounts/register
 Content-Type: application/json
 
 {
-  "displayName": "Karolis",
   "username": "karolis123",
   "password": "test1234"
 }
@@ -18,18 +17,6 @@ Content-Type: application/json
 {
   "username": "karolis123",
   "password": "test1234"
-}
-
-### Get display name (no auth needed)
-GET {{SportMatch_HostAddress}}/accounts/getname?username=karolis123
-
-### Change display name (requires token)
-POST {{SportMatch_HostAddress}}/accounts/changename
-Authorization: Bearer {{login.response.body.$.token}}
-Content-Type: application/json
-
-{
-  "newName": "KarolisV2"
 }
 
 ### Change password (requires token)

@@ -35,7 +35,7 @@ Authorization: Bearer {{login.response.body.$.token}}
 POST {{SportMatch_HostAddress}}/accounts/register
 Content-Type: application/json
 
-{ "displayName": "Armandas", "username": "armandas", "password": "test1234" }
+{ "username": "armandas", "password": "test1234" }
 
 ### Login as second user
 # @name loginOther

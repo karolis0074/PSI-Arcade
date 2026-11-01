@@ -21,21 +21,10 @@ public class AccountsController : ControllerBase
 
     private string GetUsername() => User.Identity!.Name!;
 
-    [HttpGet("getname")]
-    public IActionResult GetDisplayName([FromQuery] string username)
-    {
-        var displayName = _accountService.GetDisplayName(username);
-        if (displayName is null)
-            return NotFound();
-
-        return Ok(new { DisplayName = displayName });
-    }
-
     [HttpPost("register")]
     public IActionResult Register(RegisterRequest request)
     {
         var result = _accountService.Register(
-            request.DisplayName,
             request.Username,
             request.Password
         );
@@ -57,21 +46,6 @@ public class AccountsController : ControllerBase
             return Unauthorized();
 
         return Ok(new { token }); // returns jwt token
-    }
-
-    [Authorize]
-    [HttpPost("changename")]
-    public IActionResult ChangeDisplayName(ChangeDisplayNameRequest request)
-    {
-        var result = _accountService.ChangeDisplayName(GetUsername(), request.NewName);
-
-        return result switch
-        {
-            AccountResult.Success => Ok(),
-            AccountResult.NotFound => NotFound(),
-            AccountResult.InvalidInput => BadRequest(),
-            _ => StatusCode(500)
-        };
     }
 
     [Authorize]
