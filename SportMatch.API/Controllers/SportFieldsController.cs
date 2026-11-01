@@ -14,27 +14,24 @@ public class SportFieldsController : ControllerBase
         _sportFieldRepo = sportFieldRepo;
     }
 
-    // GET /sportfields/getall
-    [HttpGet("getall")]
-    public IActionResult GetAll() => Ok(_sportFieldRepo.GetAll());
-
-    // GET /sportfields/get?id=1
-    [HttpGet("get")]
-    public IActionResult GetById([FromQuery] int id)
-    {
-        var field = _sportFieldRepo.GetById(id);
-        if (field is null)
-            return NotFound();
-        return Ok(field);
-    }
-
-    // GET /sportfields/search?city=Vilnius&gameType=Football
-    [HttpGet("search")]
-    public IActionResult Search(
+    // GET /sportfields
+    // GET /sportfields?city=Vilnius&gameType=Football
+    [HttpGet]
+    public IActionResult GetAll(
         [FromQuery] string? city,
         [FromQuery] string? gameType,
         [FromQuery] string? fieldType)
     {
         return Ok(_sportFieldRepo.Search(city, gameType, fieldType));
+    }
+
+    // GET /sportfields/1
+    [HttpGet("{id}")]
+    public IActionResult GetById(int id)
+    {
+        var field = _sportFieldRepo.GetById(id);
+        if (field is null)
+            return NotFound();
+        return Ok(field);
     }
 }

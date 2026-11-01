@@ -122,8 +122,8 @@ export const accounts = {
 };
 
 export const games = {
-  getAll: () => request('/games/getall'),
-  get: (id) => request('/games/get', { query: { id } }),
+  getAll: () => request('/games'),
+  get: (id) => request(`/games/${id}`),
   create: ({ footballFieldId, createdByUsername, startTime, maxPlayers }) =>
     request('/games/create', {
       method: 'POST',
@@ -142,8 +142,8 @@ export const games = {
 };
 
 export const sportFields = {
-  getAll: () => request('/sportfields/getall'),
-  get: (id) => request('/sportfields/get', { query: { id } }),
+  getAll: () => request('/sportfields'),
+  get: (id) => request(`/sportfields/${id}`),
   search: ({ city, gameType, fieldType }) =>
-    request('/sportfields/search', { query: { city, gameType, fieldType } }),
+    request('/sportfields', { query: { city, gameType, fieldType } }),
 };

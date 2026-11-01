@@ -19,13 +19,13 @@ public class GamesController : ControllerBase
 
     private string GetUsername() => User.Identity!.Name!;
 
-    // GET /games/getall
-    [HttpGet("getall")]
+    // GET /games
+    [HttpGet]
     public IActionResult GetAll() => Ok(_gameManagerService.GetAll());
 
-    // GET /games/get?id=1
-    [HttpGet("get")]
-    public IActionResult GetById([FromQuery] int id)
+    // GET /games/1
+    [HttpGet("{id}")]
+    public IActionResult GetById(int id)
     {
         var game = _gameManagerService.GetById(id);
 

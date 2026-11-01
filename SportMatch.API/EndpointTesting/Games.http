@@ -8,11 +8,11 @@ Content-Type: application/json
 { "username": "karolis123", "password": "test1234" }
 
 ### Get all games
-GET {{SportMatch_HostAddress}}/games/getall
+GET {{SportMatch_HostAddress}}/games
 Accept: application/json
 
 ### Get game by id
-GET {{SportMatch_HostAddress}}/games/get?id=1
+GET {{SportMatch_HostAddress}}/games/1
 Accept: application/json
 
 ### Create a game

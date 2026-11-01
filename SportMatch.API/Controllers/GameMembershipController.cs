@@ -43,9 +43,9 @@ public class GameMembershipController : ControllerBase
         };
     }
 
-    // GET /games/spots?id=1
-    [HttpGet("spots")]
-    public IActionResult GetSpots([FromQuery] int id)
+    // GET /games/1/spots
+    [HttpGet("{id}/spots")]
+    public IActionResult GetSpots(int id)
     {
         var spots = _membershipService.GetSpots(id);
 

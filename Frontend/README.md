@@ -32,10 +32,10 @@ VITE_API_TARGET=https://localhost:7084
 
 | Kelias | Ką daro | Backend endpointai |
 | --- | --- | --- |
-| `#/games` | Žaidimų sąrašas (Būsimi / Mano / Praėję), atnaujinamas kas 15 s | `GET /games/getall` |
-| `#/games/:id` | Žaidimo informacija, užpildymas, dalyviai, ištrynimas (organizatoriui) | `GET /games/get`, `DELETE /games/delete` |
+| `#/games` | Žaidimų sąrašas (Būsimi / Mano / Praėję), atnaujinamas kas 15 s | `GET /games` |
+| `#/games/:id` | Žaidimo informacija, užpildymas, dalyviai, ištrynimas (organizatoriui) | `GET /games/{id}`, `DELETE /games/delete` |
 | `#/create` | Naujo žaidimo kūrimas | `POST /games/create` |
-| `#/fields` | Aikštelių katalogas su filtrais | `GET /sportfields/getall`, `GET /sportfields/search` |
+| `#/fields` | Aikštelių katalogas su filtrais | `GET /sportfields`, `GET /sportfields?city=&gameType=&fieldType=` |
 | `#/login` | Prisijungimas / registracija | `POST /Accounts/login`, `POST /Accounts/register`, `GET /Accounts/getname` |
 | `#/profile` | Profilis, vardo ir slaptažodžio keitimas, paskyros trynimas | `POST /Accounts/changename`, `POST /Accounts/changepass`, `DELETE /Accounts/delete` |
 
