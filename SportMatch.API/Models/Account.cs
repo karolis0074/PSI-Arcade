@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using SportMatch.API.Exceptions;
 
 namespace SportMatch.API.Models;
 
@@ -13,7 +14,7 @@ public class Account
     {
         if (string.IsNullOrWhiteSpace(username) ||
             string.IsNullOrWhiteSpace(passwordHash))
-            throw new ArgumentNullException("Account username or password is invalid.");
+            throw new InvalidAccountException("Account username or password is invalid.");
 
         DisplayName = displayName;
         Username = username;
