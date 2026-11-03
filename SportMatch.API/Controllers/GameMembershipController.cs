@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportMatch.API.Results;
 using SportMatch.API.Services;
@@ -15,11 +16,14 @@ public class GameMembershipController : ControllerBase
         _membershipService = membershipService;
     }
 
-    // POST /games/join?id=1&username=tautvydas
-    [HttpPost("join")]
-    public IActionResult Join([FromQuery] int id, [FromQuery] string username)
+    private string GetUsername() => User.Identity!.Name!;
+
+    // POST /games/1/players
+    [Authorize]
+    [HttpPost("{id}/players")]
+    public IActionResult Join(int id)
     {
-        var result = _membershipService.Join(id, username);
+        var result = _membershipService.Join(id, GetUsername());
 
         return result switch
         {
@@ -29,11 +33,12 @@ public class GameMembershipController : ControllerBase
         };
     }
 
-    // POST /games/leave?id=1&username=tautvydas
-    [HttpPost("leave")]
-    public IActionResult Leave([FromQuery] int id, [FromQuery] string username)
+    // DELETE /games/1/players/me
+    [Authorize]
+    [HttpDelete("{id}/players/me")]
+    public IActionResult Leave(int id)
     {
-        var result = _membershipService.Leave(id, username);
+        var result = _membershipService.Leave(id, GetUsername());
 
         return result switch
         {

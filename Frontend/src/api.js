@@ -136,8 +136,8 @@ export const games = {
       auth: true,
       messages: { 401: 'Žaidimą gali ištrinti tik jo šeimininkas.' },
     }),
-  join: (id, username) => request('/games/join', { method: 'POST', query: { id, username } }),
-  leave: (id, username) => request('/games/leave', { method: 'POST', query: { id, username } }),
+  join: (id) => request(`/games/${id}/players`, { method: 'POST', auth: true }),
+  leave: (id) => request(`/games/${id}/players/me`, { method: 'DELETE', auth: true }),
 };
 
 export const sportFields = {

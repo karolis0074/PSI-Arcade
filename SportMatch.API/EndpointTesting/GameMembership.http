@@ -7,6 +7,19 @@ Content-Type: application/json
 
 { "username": "karolis123", "password": "test1234" }
 
+### Register second user (200, or 409 if it already exists)
+POST {{SportMatch_HostAddress}}/accounts
+Content-Type: application/json
+
+{ "username": "armandas", "password": "test1234" }
+
+### Login as second user
+# @name loginOther
+POST {{SportMatch_HostAddress}}/accounts/login
+Content-Type: application/json
+
+{ "username": "armandas", "password": "test1234" }
+
 ### Create a game to join
 # @name create
 POST {{SportMatch_HostAddress}}/games
@@ -20,10 +33,18 @@ Authorization: Bearer {{login.response.body.$.token}}
 }
 
 ### Join a game
-POST {{SportMatch_HostAddress}}/games/join?id={{create.response.body.$.id}}&username=tautvydas
+POST {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players
+Authorization: Bearer {{loginOther.response.body.$.token}}
 
 ### Leave a game
-POST {{SportMatch_HostAddress}}/games/leave?id={{create.response.body.$.id}}&username=tautvydas
+DELETE {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players/me
+Authorization: Bearer {{loginOther.response.body.$.token}}
+
+### TEST: join without token (expect 401)
+POST {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players
+
+### TEST: leave without token (expect 401)
+DELETE {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players/me
 
 ### Get free spots of a game
 GET {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/spots

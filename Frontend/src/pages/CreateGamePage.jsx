@@ -102,7 +102,7 @@ export default function CreateGamePage({ fieldId }) {
         maxPlayers,
       });
       try {
-        await gamesApi.join(created.id, user.username);
+        await gamesApi.join(created.id);
       } catch {
       }
       toast('Žaidimas sukurtas', 'success');
