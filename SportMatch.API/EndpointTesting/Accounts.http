@@ -1,7 +1,7 @@
 @SportMatch_HostAddress = http://localhost:5108
 
 ### Register
-POST {{SportMatch_HostAddress}}/accounts/register
+POST {{SportMatch_HostAddress}}/accounts
 Content-Type: application/json
 
 {
@@ -20,7 +20,7 @@ Content-Type: application/json
 }
 
 ### Change password (requires token)
-POST {{SportMatch_HostAddress}}/accounts/changepass
+PUT {{SportMatch_HostAddress}}/accounts/me/password
 Authorization: Bearer {{login.response.body.$.token}}
 Content-Type: application/json
 
@@ -30,6 +30,6 @@ Content-Type: application/json
 }
 
 ### Delete account (requires token)
-DELETE {{SportMatch_HostAddress}}/accounts/delete
+DELETE {{SportMatch_HostAddress}}/accounts/me
 Authorization: Bearer {{login.response.body.$.token}}
 ###

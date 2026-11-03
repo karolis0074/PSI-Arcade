@@ -9,7 +9,7 @@ Content-Type: application/json
 
 ### Create a game to join
 # @name create
-POST {{SportMatch_HostAddress}}/games/create
+POST {{SportMatch_HostAddress}}/games
 Content-Type: application/json
 Authorization: Bearer {{login.response.body.$.token}}
 

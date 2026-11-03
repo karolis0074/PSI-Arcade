@@ -35,9 +35,9 @@ public class GamesController : ControllerBase
         return Ok(game);
     }
 
-    // POST /games/create
+    // POST /games
     [Authorize]
-    [HttpPost("create")]
+    [HttpPost]
     public IActionResult Create(CreateGameRequest request)
     {
         var result = _gameManagerService.Create(GetUsername(), request);
@@ -48,10 +48,10 @@ public class GamesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = result.Game.Id }, result.Game);
     }
 
-    // DELETE /games/delete?id=1
+    // DELETE /games/1
     [Authorize]
-    [HttpDelete("delete")]
-    public IActionResult Delete([FromQuery] int id)
+    [HttpDelete("{id}")]
+    public IActionResult Delete(int id)
     {
         var result = _gameManagerService.Delete(id, GetUsername());
 

@@ -21,7 +21,8 @@ public class AccountsController : ControllerBase
 
     private string GetUsername() => User.Identity!.Name!;
 
-    [HttpPost("register")]
+    // POST /accounts
+    [HttpPost]
     public IActionResult Register(RegisterRequest request)
     {
         var result = _accountService.Register(
@@ -38,6 +39,7 @@ public class AccountsController : ControllerBase
         };
     }
 
+    // POST /accounts/login
     [HttpPost("login")]
     public IActionResult Login(LoginRequest request)
     {
@@ -48,8 +50,9 @@ public class AccountsController : ControllerBase
         return Ok(new { token }); // returns jwt token
     }
 
+    // PUT /accounts/me/password
     [Authorize]
-    [HttpPost("changepass")]
+    [HttpPut("me/password")]
     public IActionResult ChangePassword(ChangePasswordRequest request)
     {
         var username = GetUsername();
@@ -67,8 +70,9 @@ public class AccountsController : ControllerBase
         };
     }
 
+    // DELETE /accounts/me
     [Authorize]
-    [HttpDelete("delete")]
+    [HttpDelete("me")]
     public IActionResult DeleteAccount()
     {
         var result = _accountService.DeleteAccount(GetUsername());
