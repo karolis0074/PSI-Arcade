@@ -5,6 +5,7 @@ using SportMatch.API.Data;
 using SportMatch.API.Repositories;
 using SportMatch.API.Services;
 using System.Text;
+using SportMatch.API.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,12 +42,20 @@ builder.Services.AddSingleton<CryptService>();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+try
 {
+    using var scope = app.Services.CreateScope();
+
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 
-    var sportFieldRepository = scope.ServiceProvider.GetRequiredService<SportFieldRepository>();
+    // creating the repository runs SeedIfEmpty(), which can throw SportFieldDataException
+    scope.ServiceProvider.GetRequiredService<SportFieldRepository>();
+}
+catch (SportFieldDataException ex)
+{
+    app.Logger.LogCritical(ex, "Cannot start the API: {Message}", ex.Message);
+    return;
 }
 
 if (app.Environment.IsDevelopment())

@@ -1,6 +1,7 @@
 using SportMatch.API.Models;
 using SportMatch.API.Repositories;
 using SportMatch.API.Results;
+using SportMatch.API.Exceptions;
 
 namespace SportMatch.API.Services;
 
@@ -27,10 +28,16 @@ public class AccountService
             string.IsNullOrWhiteSpace(username) ||
             string.IsNullOrWhiteSpace(password))
             return RegisterResult.InvalidInput;
-
-        var passwordHash = _cryptService.Hash(password);
-        var account = new Account(displayName, username, passwordHash);
-        return _accountRepository.Add(account);
+        try
+        {
+            var passwordHash = _cryptService.Hash(password);
+            var account = new Account(displayName, username, passwordHash);
+            return _accountRepository.Add(account);
+        }
+        catch (InvalidAccountException)
+        {
+            return RegisterResult.InvalidInput;
+        }
     }
 
     public AccountResult ChangePassword(Account? account, string newPassword)

@@ -2,6 +2,7 @@ using SportMatch.API.Data;
 using SportMatch.API.Models;
 using System.Collections;
 using System.Text.Json;
+using SportMatch.API.Exceptions;
 
 namespace SportMatch.API.Repositories;
 
@@ -20,16 +21,27 @@ public class SportFieldRepository : IEnumerable<SportField>
         if (_dbContext.SportFields.Any())
             return;
 
-        using var stream = File.OpenRead("Data/sportfields.json");
-
-        var fields = JsonSerializer.Deserialize<List<SportField>>(
-            stream,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-        if (fields is not null)
+        try
         {
+            using var stream = File.OpenRead("Data/sportfields.json");
+
+            var fields = JsonSerializer.Deserialize<List<SportField>>(
+                stream,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (fields is null || fields.Count == 0)
+                throw new SportFieldDataException("sportfields.json contains no sport fields.");
+
             _dbContext.SportFields.AddRange(fields);
             _dbContext.SaveChanges();
+        }
+        catch (FileNotFoundException ex)
+        {
+            throw new SportFieldDataException("sportfields.json was not found.", ex);
+        }
+        catch (JsonException ex)
+        {
+            throw new SportFieldDataException("sportfields.json is not valid JSON.", ex);
         }
     }
 
