@@ -57,4 +57,19 @@ public class GameMembershipServiceTests
         Assert.Equal(MembershipResult.GameFull, result);
         Assert.DoesNotContain("jonas", service.GetGame(game.Id)!.JoinedUsernames);
     }
+
+    [Fact]
+    public void Leave_UserNotJoined_ReturnsNotJoined()
+    {
+        // arrange
+        var dbContext = TestDatabase.Create();
+        var game = AddGame(dbContext, maxPlayers: 2);
+        var service = new GameMembershipService(new GameRepository(dbContext));
+
+        // act
+        var result = service.Leave(game.Id, "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.NotJoined, result);
+    }
 }
