@@ -106,44 +106,43 @@ async function request(path, { method = 'GET', body, query, auth = false, messag
 export const accounts = {
   getName: (username) => request('/Accounts/getname', { query: { username } }),
   register: ({ displayName, username, password }) =>
-    request('/Accounts/register', { method: 'POST', body: { displayName, username, password } }),
+    request('/accounts', { method: 'POST', body: { displayName, username, password } }),
   login: ({ username, password }) =>
-    request('/Accounts/login', { method: 'POST', body: { username, password } }),
+    request('/accounts/login', { method: 'POST', body: { username, password } }),
   changeName: ({ newName }) =>
     request('/Accounts/changename', { method: 'POST', body: { newName }, auth: true }),
   changePassword: ({ oldPassword, newPassword }) =>
-    request('/Accounts/changepass', {
-      method: 'POST',
+    request('/accounts/me/password', {
+      method: 'PUT',
       body: { oldPassword, newPassword },
       auth: true,
       messages: { 401: 'Neteisingas dabartinis slaptažodis.' },
     }),
-  remove: () => request('/Accounts/delete', { method: 'DELETE', auth: true }),
+  remove: () => request('/accounts/me', { method: 'DELETE', auth: true }),
 };
 
 export const games = {
-  getAll: () => request('/games/getall'),
-  get: (id) => request('/games/get', { query: { id } }),
+  getAll: () => request('/games'),
+  get: (id) => request(`/games/${id}`),
   create: ({ footballFieldId, createdByUsername, startTime, maxPlayers }) =>
-    request('/games/create', {
+    request('/games', {
       method: 'POST',
       body: { footballFieldId, createdByUsername, startTime, maxPlayers },
       auth: true,
     }),
   remove: (id) =>
-    request('/games/delete', {
+    request(`/games/${id}`, {
       method: 'DELETE',
-      query: { id },
       auth: true,
       messages: { 401: 'Žaidimą gali ištrinti tik jo šeimininkas.' },
     }),
-  join: (id, username) => request('/games/join', { method: 'POST', query: { id, username } }),
-  leave: (id, username) => request('/games/leave', { method: 'POST', query: { id, username } }),
+  join: (id) => request(`/games/${id}/players`, { method: 'POST', auth: true }),
+  leave: (id) => request(`/games/${id}/players/me`, { method: 'DELETE', auth: true }),
 };
 
 export const sportFields = {
-  getAll: () => request('/sportfields/getall'),
-  get: (id) => request('/sportfields/get', { query: { id } }),
+  getAll: () => request('/sportfields'),
+  get: (id) => request(`/sportfields/${id}`),
   search: ({ city, gameType, fieldType }) =>
-    request('/sportfields/search', { query: { city, gameType, fieldType } }),
+    request('/sportfields', { query: { city, gameType, fieldType } }),
 };

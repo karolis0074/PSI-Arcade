@@ -61,7 +61,7 @@ export default function GameDetailPage({ id }) {
     }
     setMembershipBusy(true);
     try {
-      const updated = await gamesApi[action](id, user.username);
+      const updated = await gamesApi[action](id);
       if (updated) setGame(updated);
       else await load();
       toast(action === 'join' ? 'Prisijungėte prie žaidimo' : 'Išėjote iš žaidimo', 'success');

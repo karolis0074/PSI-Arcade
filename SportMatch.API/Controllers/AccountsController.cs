@@ -21,21 +21,11 @@ public class AccountsController : ControllerBase
 
     private string GetUsername() => User.Identity!.Name!;
 
-    [HttpGet("getname")]
-    public IActionResult GetDisplayName([FromQuery] string username)
-    {
-        var displayName = _accountService.GetDisplayName(username);
-        if (displayName is null)
-            return NotFound();
-
-        return Ok(new { DisplayName = displayName });
-    }
-
-    [HttpPost("register")]
+    // POST /accounts
+    [HttpPost]
     public IActionResult Register(RegisterRequest request)
     {
         var result = _accountService.Register(
-            request.DisplayName,
             request.Username,
             request.Password
         );
@@ -49,6 +39,7 @@ public class AccountsController : ControllerBase
         };
     }
 
+    // POST /accounts/login
     [HttpPost("login")]
     public IActionResult Login(LoginRequest request)
     {
@@ -59,23 +50,9 @@ public class AccountsController : ControllerBase
         return Ok(new { token }); // returns jwt token
     }
 
+    // PUT /accounts/me/password
     [Authorize]
-    [HttpPost("changename")]
-    public IActionResult ChangeDisplayName(ChangeDisplayNameRequest request)
-    {
-        var result = _accountService.ChangeDisplayName(GetUsername(), request.NewName);
-
-        return result switch
-        {
-            AccountResult.Success => Ok(),
-            AccountResult.NotFound => NotFound(),
-            AccountResult.InvalidInput => BadRequest(),
-            _ => StatusCode(500)
-        };
-    }
-
-    [Authorize]
-    [HttpPost("changepass")]
+    [HttpPut("me/password")]
     public IActionResult ChangePassword(ChangePasswordRequest request)
     {
         var username = GetUsername();
@@ -93,8 +70,9 @@ public class AccountsController : ControllerBase
         };
     }
 
+    // DELETE /accounts/me
     [Authorize]
-    [HttpDelete("delete")]
+    [HttpDelete("me")]
     public IActionResult DeleteAccount()
     {
         var result = _accountService.DeleteAccount(GetUsername());

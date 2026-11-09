@@ -1,29 +1,29 @@
 @SportMatch_HostAddress = http://localhost:5108
 
 ### Get all fields
-GET {{SportMatch_HostAddress}}/sportfields/getall
+GET {{SportMatch_HostAddress}}/sportfields
 Accept: application/json
 
 ### Get field by id
-GET {{SportMatch_HostAddress}}/sportfields/get?id=1
+GET {{SportMatch_HostAddress}}/sportfields/1
 Accept: application/json
 
 ### Search by city
-GET {{SportMatch_HostAddress}}/sportfields/search?city=vilnius
+GET {{SportMatch_HostAddress}}/sportfields?city=vilnius
 Accept: application/json
 
 ### Search by game type
-GET {{SportMatch_HostAddress}}/sportfields/search?gameType=Football
+GET {{SportMatch_HostAddress}}/sportfields?gameType=Football
 Accept: application/json
 
 ### Search by city and game type
-GET {{SportMatch_HostAddress}}/sportfields/search?city=vilnius&gameType=Basketball
+GET {{SportMatch_HostAddress}}/sportfields?city=vilnius&gameType=Basketball
 Accept: application/json
 
 ### Search by field size (L = large stadiums)
-GET {{SportMatch_HostAddress}}/sportfields/search?fieldType=L
+GET {{SportMatch_HostAddress}}/sportfields?fieldType=L
 Accept: application/json
 
 ### Search by game type (Tennis)
-GET {{SportMatch_HostAddress}}/sportfields/search?gameType=Tennis
+GET {{SportMatch_HostAddress}}/sportfields?gameType=Tennis
 Accept: application/json
