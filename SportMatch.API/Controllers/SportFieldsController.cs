@@ -7,11 +7,11 @@ namespace SportMatch.API.Controllers;
 [Route("sportfields")]
 public class SportFieldsController : ControllerBase
 {
-    private readonly SportFieldRepository _sportFieldRepo;
+    private readonly SportFieldRepository _sportFieldRepository;
 
-    public SportFieldsController(SportFieldRepository sportFieldRepo)
+    public SportFieldsController(SportFieldRepository sportFieldRepository)
     {
-        _sportFieldRepo = sportFieldRepo;
+        _sportFieldRepository = sportFieldRepository;
     }
 
     // GET /sportfields
@@ -22,14 +22,14 @@ public class SportFieldsController : ControllerBase
         [FromQuery] string? gameType,
         [FromQuery] string? fieldType)
     {
-        return Ok(_sportFieldRepo.Search(city, gameType, fieldType));
+        return Ok(_sportFieldRepository.Search(city, gameType, fieldType));
     }
 
     // GET /sportfields/1
     [HttpGet("{id}")]
     public IActionResult GetById(int id)
     {
-        var field = _sportFieldRepo.GetById(id);
+        var field = _sportFieldRepository.GetById(id);
         if (field is null)
             return NotFound();
         return Ok(field);

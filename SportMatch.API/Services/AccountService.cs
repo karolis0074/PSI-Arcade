@@ -6,12 +6,12 @@ namespace SportMatch.API.Services;
 
 public class AccountService
 {
-    private readonly AccountRepository _accountRepo;
+    private readonly AccountRepository _accountRepository;
     private readonly CryptService _cryptService;
 
-    public AccountService(AccountRepository accountRepo, CryptService cryptService)
+    public AccountService(AccountRepository accountRepository, CryptService cryptService)
     {
-        _accountRepo = accountRepo;
+        _accountRepository = accountRepository;
         _cryptService = cryptService;
     }
 
@@ -23,7 +23,7 @@ public class AccountService
 
         var passwordHash = _cryptService.Hash(password);
         var account = new Account { Username = username, PasswordHash = passwordHash };
-        return _accountRepo.Add(account);
+        return _accountRepository.Add(account);
     }
 
     public AccountResult ChangePassword(Account? account, string newPassword)
@@ -34,15 +34,15 @@ public class AccountService
             return AccountResult.NotFound;
 
         account.PasswordHash = _cryptService.Hash(newPassword);
-        _accountRepo.Update(account);
+        _accountRepository.Update(account);
         return AccountResult.Success;
     }
 
     public AccountResult ChangePassword(string username, string newPassword)
     {
-        var account = _accountRepo.GetByUsername(username);
+        var account = _accountRepository.GetByUsername(username);
         return ChangePassword(account, newPassword);
     }
 
-    public AccountResult DeleteAccount(string username) => _accountRepo.Delete(username);
+    public AccountResult DeleteAccount(string username) => _accountRepository.Delete(username);
 }
