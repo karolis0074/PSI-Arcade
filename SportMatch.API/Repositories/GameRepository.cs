@@ -13,7 +13,6 @@ public class GameRepository
         _db = db;
     }
 
-    // --- SENI METODAI (Kolegų kodui, kad nesugriūtų) ---
     public Game Add(Game game)
     {
         _db.Games.Add(game);
@@ -41,7 +40,7 @@ public class GameRepository
         _db.SaveChanges();
     }
 
-    // --- NAUJI ASYNC METODAI (Tavo Lab #2 reikalavimui #4) ---
+    // --- NAUJI ASYNC METODAI 
     public async Task<List<Game>> GetAllAsync() => await _db.Games.ToListAsync();
     
     public async Task<Game?> GetByIdAsync(int id) => await _db.Games.FirstOrDefaultAsync(g => g.Id == id);
