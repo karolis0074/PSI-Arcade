@@ -76,6 +76,10 @@ public class GameMembershipService
         if (!game.JoinedUsernames.Contains(username))
             return MembershipResult.NotJoined;
 
+        // host can't leave, otherwise the game could be left without players
+        if (game.CreatedByUsername.Equals(username, StringComparison.OrdinalIgnoreCase))
+            return MembershipResult.HostCannotLeave;
+
         game.JoinedUsernames.Remove(username);
         game.UpdateStatus();
 

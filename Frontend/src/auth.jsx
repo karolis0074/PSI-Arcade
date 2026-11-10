@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { accounts, isTokenExpired, setSessionExpiredHandler, setToken } from './api.js';
+import { accounts, isTokenExpired, setSessionExpiredHandler, setToken, usernameFromToken } from './api.js';
 import { useToast } from './components/Toast.jsx';
 import { navigate } from './router.js';
 
 const AuthContext = createContext(null);
 const KEY = 'pavadinimas.user';
 
-function load() {
+function load() {                         //atkuria useri po refresho
   try {
     const user = JSON.parse(localStorage.getItem(KEY)) ?? null;
     if (!user?.token || isTokenExpired(user.token)) return null;
@@ -17,7 +17,7 @@ function load() {
   }
 }
 
-function persist(user) {
+function persist(user) {                 // iraso i localStoraga
   try {
     if (user) localStorage.setItem(KEY, JSON.stringify(user));
     else localStorage.removeItem(KEY);
@@ -25,7 +25,7 @@ function persist(user) {
   }
 }
 
-async function fetchDisplayName(username) {
+async function fetchDisplayName(username) {         //paima varda
   try {
     const res = await accounts.getName(username);
     return res?.displayName ?? res?.DisplayName ?? username;
@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
   const toast = useToast();
   const userRef = useRef(user);
 
-  const save = useCallback((u) => {
+  const save = useCallback((u) => {            //vienintelis budas issaugoti
     userRef.current = u;
     setToken(u?.token ?? null);
     setUser(u);
@@ -47,7 +47,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    setSessionExpiredHandler(() => {
+    setSessionExpiredHandler(() => {         //pasibaigusios sesijos valdymas
       if (!userRef.current) return;
       save(null);
       toast('Sesija baigėsi. Prisijunkite iš naujo.', 'error');
@@ -58,7 +58,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!user) return;
-    accounts.getName(user.username).then(
+    accounts.getName(user.username).then(            // patikra atidarius puslapi
       (res) => {
         const displayName = res?.displayName ?? user.displayName;
         if (displayName !== user.displayName) save({ ...user, displayName });
@@ -75,8 +75,9 @@ export function AuthProvider({ children }) {
       const token = res?.token ?? res?.Token;
       if (!token) throw new Error('Įvyko klaida.');
       setToken(token);
-      const displayName = await fetchDisplayName(username);
-      save({ username, displayName, token });
+      const realUsername = usernameFromToken(token) ?? username;
+      const displayName = await fetchDisplayName(realUsername);
+      save({ username: realUsername, displayName, token });
     },
     [save]
   );
