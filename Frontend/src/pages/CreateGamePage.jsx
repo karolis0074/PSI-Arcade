@@ -92,19 +92,18 @@ export default function CreateGamePage({ fieldId }) {
       setError('Žaidimo pradžia turi būti ateityje.');
       return;
     }
+    if (selectedField && maxPlayers > selectedField.capacity) {
+      setError(`Žaidėjų skaičius negali viršyti aikštelės talpos (${selectedField.capacity}).`);
+      return;
+    }
 
     setSubmitting(true);
     try {
       const created = await gamesApi.create({
         footballFieldId,
-        createdByUsername: user.username,
         startTime: start.toISOString(),
         maxPlayers,
       });
-      try {
-        await gamesApi.join(created.id, user.username);
-      } catch {
-      }
       toast('Žaidimas sukurtas', 'success');
       navigate(`/games/${created.id}`);
     } catch (err) {
@@ -163,7 +162,7 @@ export default function CreateGamePage({ fieldId }) {
               <div className="row-label">Maksimalus žaidėjų skaičius</div>
               {selectedField && <div className="field-hint">Aikštelės talpa – {selectedField.capacity}</div>}
             </div>
-            <Stepper value={maxPlayers} onChange={setMaxPlayers} min={2} max={50} label="Žaidėjų skaičius" />
+            <Stepper value={maxPlayers} onChange={setMaxPlayers} min={2} max={selectedField?.capacity ?? 50} label="Žaidėjų skaičius" />
           </div>
         </section>
 

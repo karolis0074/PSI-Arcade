@@ -99,8 +99,8 @@ export default function GameDetailPage({ id }) {
   const field = byId.get(game.footballFieldId) ?? game.footballField ?? null;
   const start = parseDate(game.startTime);
   const players = game.joinedUsernames ?? [];
-  const host = players[0] ?? null;
-  const isHost = Boolean(user && host && host === user.username);
+  const host = game.createdByUsername || null;
+  const isHost = Boolean(user && host && sameUser(host, user.username));
   const joined = Boolean(user && players.some((u) => sameUser(u, user.username)));
   const started = start <= new Date();
   const full = players.length >= game.maxPlayers;
@@ -124,7 +124,11 @@ export default function GameDetailPage({ id }) {
 
       {!started && (
         <div className="membership">
-          {joined ? (
+          {isHost ? (
+            <Button variant="secondary" size="lg" block disabled>
+              Šeimininkas negali išeiti iš žaidimo
+            </Button>
+          ) : joined ? (
             <Button variant="secondary" size="lg" block loading={membershipBusy} onClick={() => handleMembership('leave')}>
               Išeiti iš žaidimo
             </Button>
@@ -137,7 +141,7 @@ export default function GameDetailPage({ id }) {
       )}
 
       <Group title="Informacija">
-        <Row label="Organizatorius" value={host ?? (game.createdByUsername || '—')} />
+        <Row label="Organizatorius" value={host ?? '—'} />
         <Row label="Data" value={fmtLong(start)} />
         <Row label="Pradžia" value={fmtTime(start)} />
         <Row label="Maks. žaidėjų" value={game.maxPlayers} />
@@ -168,8 +172,8 @@ export default function GameDetailPage({ id }) {
             <div className="row" key={u}>
               <span className="avatar avatar-sm">{initials(u)}</span>
               <span className="row-label">{u}</span>
-              {u === host && <span className="row-value">Šeimininkas</span>}
-              {user && sameUser(u, user.username) && u !== host && <span className="row-value">Jūs</span>}
+              {sameUser(u, host) && <span className="row-value">Šeimininkas</span>}
+              {user && sameUser(u, user.username) && !sameUser(u, host) && <span className="row-value">Jūs</span>}
             </div>
           ))
         )}
