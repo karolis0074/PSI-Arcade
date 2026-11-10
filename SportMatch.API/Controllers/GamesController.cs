@@ -14,26 +14,26 @@ public class GamesController : ControllerBase
 {
     private string GetUsername() => User.Identity!.Name!;
     private readonly GameRepository _store;
-    private readonly AppDbContext _db;
+    private readonly AppDbContext _dbContext;
     private readonly GameManagerService _gameManager;
 
-    public GamesController(GameRepository store, AppDbContext db, GameManagerService gameManager)
+    public GamesController(GameRepository store, AppDbContext dbContext, GameManagerService gameManager)
     {
         _store = store;
-        _db = db;
+        _dbContext = dbContext;
         _gameManager = gameManager;
     }
 
     [HttpGet("getall")]
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await _store.GetAllAsync()); // Naudoja async
+        return Ok(await _store.GetAllAsync());
     }
 
     [HttpGet("get")]
     public async Task<IActionResult> GetById([FromQuery] int id)
     {
-        var game = await _store.GetByIdAsync(id); // Naudoja async
+        var game = await _store.GetByIdAsync(id);
 
         if (game is null)
             return NotFound();
@@ -51,11 +51,11 @@ public class GamesController : ControllerBase
         if (game.StartTime <= DateTime.UtcNow)
             return BadRequest("StartTime must be in the future");
 
-        var field = await _db.SportFields.FirstOrDefaultAsync(f => f.Id == game.FootballFieldId);
+        var field = await _dbContext.SportFields.FirstOrDefaultAsync(f => f.Id == game.FootballFieldId);
         if (field is null)
             return BadRequest("Football field not found");
 
-        var created = await _store.AddAsync(game); // Naudoja async
+        var created = await _store.AddAsync(game);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -63,7 +63,7 @@ public class GamesController : ControllerBase
     [HttpDelete("delete")]
     public async Task<IActionResult> Delete([FromQuery] int id)
     {
-        var game = await _store.GetByIdAsync(id); // Naudoja async
+        var game = await _store.GetByIdAsync(id);
 
         if (game is null)
             return NotFound();
@@ -71,7 +71,10 @@ public class GamesController : ControllerBase
         if (!_gameManager.IsHost(GetUsername(), game))
             return Unauthorized();
 
-        _store.Delete(id); 
+        var success = _store.Delete(id);
+
+        if (!success)
+            return NotFound();
 
         return NoContent();
     }
