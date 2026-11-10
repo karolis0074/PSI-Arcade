@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SportMatch.API.DataTransferObjects.Requests;
-using SportMatch.API.Results;
+using SportMatch.API.Data;
+using SportMatch.API.Models;
+using SportMatch.API.Repositories;
 using SportMatch.API.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace SportMatch.API.Controllers;
 
@@ -10,24 +12,28 @@ namespace SportMatch.API.Controllers;
 [Route("games")]
 public class GamesController : ControllerBase
 {
-    private readonly GameManagerService _gameManagerService;
+    private string GetUsername() => User.Identity!.Name!;
+    private readonly GameRepository _store;
+    private readonly AppDbContext _dbContext;
+    private readonly GameManagerService _gameManager;
 
-    public GamesController(GameManagerService gameManagerService)
+    public GamesController(GameRepository store, AppDbContext dbContext, GameManagerService gameManager)
     {
-        _gameManagerService = gameManagerService;
+        _store = store;
+        _dbContext = dbContext;
+        _gameManager = gameManager;
     }
 
-    private string GetUsername() => User.Identity!.Name!;
-
-    // GET /games/getall
     [HttpGet("getall")]
-    public IActionResult GetAll() => Ok(_gameManagerService.GetAll());
-
-    // GET /games/get?id=1
-    [HttpGet("get")]
-    public IActionResult GetById([FromQuery] int id)
+    public async Task<IActionResult> GetAll()
     {
-        var game = _gameManagerService.GetById(id);
+        return Ok(await _store.GetAllAsync());
+    }
+
+    [HttpGet("get")]
+    public async Task<IActionResult> GetById([FromQuery] int id)
+    {
+        var game = await _store.GetByIdAsync(id);
 
         if (game is null)
             return NotFound();
@@ -35,32 +41,41 @@ public class GamesController : ControllerBase
         return Ok(game);
     }
 
-    // POST /games/create
     [Authorize]
     [HttpPost("create")]
-    public IActionResult Create(CreateGameRequest request)
+    public async Task<IActionResult> Create(Game game)
     {
-        var result = _gameManagerService.Create(GetUsername(), request);
+        if (game.MaxPlayers <= 0)
+            return BadRequest("MaxPlayers must be greater than 0");
 
-        if (result.Game is null)
-            return BadRequest(result.Error);
+        if (game.StartTime <= DateTime.UtcNow)
+            return BadRequest("StartTime must be in the future");
 
-        return CreatedAtAction(nameof(GetById), new { id = result.Game.Id }, result.Game);
+        var field = await _dbContext.SportFields.FirstOrDefaultAsync(f => f.Id == game.FootballFieldId);
+        if (field is null)
+            return BadRequest("Football field not found");
+
+        var created = await _store.AddAsync(game);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    // DELETE /games/delete?id=1
     [Authorize]
     [HttpDelete("delete")]
-    public IActionResult Delete([FromQuery] int id)
+    public async Task<IActionResult> Delete([FromQuery] int id)
     {
-        var result = _gameManagerService.Delete(id, GetUsername());
+        var game = await _store.GetByIdAsync(id);
 
-        return result switch
-        {
-            DeleteGameResult.Success => NoContent(),
-            DeleteGameResult.NotFound => NotFound(),
-            DeleteGameResult.NotHost => Forbid(),   // 403
-            _ => StatusCode(500)
-        };
+        if (game is null)
+            return NotFound();
+
+        if (!_gameManager.IsHost(GetUsername(), game))
+            return Unauthorized();
+
+        var success = _store.Delete(id);
+
+        if (!success)
+            return NotFound();
+
+        return NoContent();
     }
 }
