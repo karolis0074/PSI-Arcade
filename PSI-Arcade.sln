@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36915.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SportMatch.API", "SportMatch.API\SportMatch.API.csproj", "{662C750D-F943-48A2-98BF-902678BA9174}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SportMatch.API.Tests", "SportMatch.API.Tests\SportMatch.API.Tests.csproj", "{6ED4D0AC-47C2-4C46-9A48-757C2BAC1CBD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{662C750D-F943-48A2-98BF-902678BA9174}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{662C750D-F943-48A2-98BF-902678BA9174}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{662C750D-F943-48A2-98BF-902678BA9174}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6ED4D0AC-47C2-4C46-9A48-757C2BAC1CBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ED4D0AC-47C2-4C46-9A48-757C2BAC1CBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ED4D0AC-47C2-4C46-9A48-757C2BAC1CBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ED4D0AC-47C2-4C46-9A48-757C2BAC1CBD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
