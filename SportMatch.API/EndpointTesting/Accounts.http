@@ -45,4 +45,57 @@ Content-Type: application/json
 ### Delete account (requires token)
 DELETE {{SportMatch_HostAddress}}/accounts/delete
 Authorization: Bearer {{login.response.body.$.token}}
+
+# ---------------------------------------------------------------
+# Extra checks. Run them in this order, after Register above
+# and before Delete account.
+# ---------------------------------------------------------------
+
+### Register the same username again -> expect 409 Conflict
+POST {{SportMatch_HostAddress}}/accounts/register
+Content-Type: application/json
+
+{
+  "displayName": "Karolis",
+  "username": "karolis123",
+  "password": "test1234"
+}
+
+### Register the same username in capitals -> expect 409 Conflict (usernames ignore case)
+POST {{SportMatch_HostAddress}}/accounts/register
+Content-Type: application/json
+
+{
+  "displayName": "Karolis",
+  "username": "KAROLIS123",
+  "password": "test1234"
+}
+
+### Log in with the new password, after Change password -> expect 200 with a token
+POST {{SportMatch_HostAddress}}/accounts/login
+Content-Type: application/json
+
+{
+  "username": "karolis123",
+  "password": "newPassword1"
+}
+
+### Log in with the old password, after Change password -> expect 401 Unauthorized
+POST {{SportMatch_HostAddress}}/accounts/login
+Content-Type: application/json
+
+{
+  "username": "karolis123",
+  "password": "test1234"
+}
+
+### Get display name, after Change display name -> expect "KarolisV2"
+GET {{SportMatch_HostAddress}}/accounts/getname?username=karolis123
+
+### Delete the account again, after Delete account -> expect 404 Not Found
+DELETE {{SportMatch_HostAddress}}/accounts/delete
+Authorization: Bearer {{login.response.body.$.token}}
+
+### Get display name, after Delete account -> expect 404 Not Found
+GET {{SportMatch_HostAddress}}/accounts/getname?username=karolis123
 ###

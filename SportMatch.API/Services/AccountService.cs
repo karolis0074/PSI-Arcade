@@ -32,7 +32,7 @@ public class AccountService
         {
             var passwordHash = _cryptService.Hash(password);
             var account = new Account(displayName, username, passwordHash);
-            return _accountRepository.Add(account);
+            return _accountRepository.TryAdd(account);
         }
         catch (InvalidAccountException)
         {
@@ -76,5 +76,6 @@ public class AccountService
         return ChangeDisplayName(account, newName);
     }
 
-    public AccountResult DeleteAccount(string username) => _accountRepository.Delete(username);
+    public AccountResult DeleteAccount(string username) =>
+    _accountRepository.Delete(username) ? AccountResult.Success : AccountResult.NotFound;
 }
