@@ -1,7 +1,6 @@
 using SportMatch.API.Models;
 using SportMatch.API.Repositories;
 using SportMatch.API.Results;
-using SportMatch.API.Exceptions;
 
 namespace SportMatch.API.Services;
 
@@ -16,28 +15,15 @@ public class AccountService
         _cryptService = cryptService;
     }
 
-    public string? GetDisplayName(string username)
+    public RegisterResult Register(string username, string password)
     {
-        var account = _accountRepository.GetByUsername(username);
-        return account?.DisplayName;
-    }
-
-    public RegisterResult Register(string displayName, string username, string password)
-    {
-        if (string.IsNullOrWhiteSpace(displayName) ||
-            string.IsNullOrWhiteSpace(username) ||
+        if (string.IsNullOrWhiteSpace(username) ||
             string.IsNullOrWhiteSpace(password))
             return RegisterResult.InvalidInput;
-        try
-        {
-            var passwordHash = _cryptService.Hash(password);
-            var account = new Account(displayName, username, passwordHash);
-            return _accountRepository.TryAdd(account);
-        }
-        catch (InvalidAccountException)
-        {
-            return RegisterResult.InvalidInput;
-        }
+
+        var passwordHash = _cryptService.Hash(password);
+        var account = new Account { Username = username, PasswordHash = passwordHash };
+        return _accountRepository.TryAdd(account);
     }
 
     public AccountResult ChangePassword(Account? account, string newPassword)
@@ -58,24 +44,13 @@ public class AccountService
         return ChangePassword(account, newPassword);
     }
 
-    public AccountResult ChangeDisplayName(Account? account, string newName)
+    public AccountResult DeleteAccount(string username)
     {
-        if (string.IsNullOrWhiteSpace(newName))
-            return AccountResult.InvalidInput;
+        // the primary key is now the int Id, so look the account up by username first
+        var account = _accountRepository.GetByUsername(username);
         if (account is null)
             return AccountResult.NotFound;
 
-        account.DisplayName = newName;
-        _accountRepository.Update(account);
-        return AccountResult.Success;
+        return _accountRepository.Delete(account.Id) ? AccountResult.Success : AccountResult.NotFound;
     }
-
-    public AccountResult ChangeDisplayName(string username, string newName)
-    {
-        var account = _accountRepository.GetByUsername(username);
-        return ChangeDisplayName(account, newName);
-    }
-
-    public AccountResult DeleteAccount(string username) =>
-    _accountRepository.Delete(username) ? AccountResult.Success : AccountResult.NotFound;
 }

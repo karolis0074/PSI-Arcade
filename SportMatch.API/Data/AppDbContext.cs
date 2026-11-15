@@ -18,8 +18,9 @@ public class AppDbContext : DbContext
     {
         modelBuilder.Entity<Account>(entity =>
         {
-            entity.HasKey(a => a.Username);
+            // Id is the primary key by convention, the username only has to stay unique (case-insensitive)
             entity.Property(a => a.Username).UseCollation("NOCASE");
+            entity.HasIndex(a => a.Username).IsUnique();
         });
     }
 }
