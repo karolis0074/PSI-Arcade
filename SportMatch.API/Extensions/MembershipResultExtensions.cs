@@ -22,6 +22,9 @@ public static class MembershipResultExtensions
         if (result == MembershipResult.NotJoined)
             return "User is not in this game";
 
+        if (result == MembershipResult.HostCannotLeave)
+            return "Host cannot leave the game";
+
         return "Success";
     }
 }

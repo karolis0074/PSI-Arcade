@@ -6,7 +6,7 @@ export default function GameCard({ game, field }) {
   const start = parseDate(game.startTime);
   const joined = game.joinedUsernames?.length ?? 0;
   const title = field?.name ?? `Aikštelė #${game.footballFieldId}`;
-  const meta = [field && gameTypeLabel(field.gameType), `org. ${game.joinedUsernames?.[0] ?? (game.createdByUsername || '—')}`]
+  const meta = [field && gameTypeLabel(field.gameType), `org. ${game.createdByUsername || '—'}`]
     .filter(Boolean)
     .join(' · ');
 
