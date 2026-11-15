@@ -1,6 +1,7 @@
 using SportMatch.API.Models;
 using SportMatch.API.Repositories;
 using SportMatch.API.Results;
+using SportMatch.API.Exceptions;
 
 namespace SportMatch.API.Services;
 
@@ -17,13 +18,25 @@ public class AccountService
 
     public RegisterResult Register(string username, string password)
     {
-        if (string.IsNullOrWhiteSpace(username) ||
-            string.IsNullOrWhiteSpace(password))
-            return RegisterResult.InvalidInput;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                throw new InvalidAccountException("Username cannot be empty.");
+            if (username.Length < 3 || username.Length > 20)
+                throw new InvalidAccountException("Username must be 3-20 characters long.");
+            if (!username.All(c => char.IsLetterOrDigit(c) || c == '_'))
+                throw new InvalidAccountException("Username can only contain letters, digits and _.");
+            if (string.IsNullOrWhiteSpace(password))
+                throw new InvalidAccountException("Password cannot be empty.");
 
-        var passwordHash = _cryptService.Hash(password);
-        var account = new Account { Username = username, PasswordHash = passwordHash };
-        return _accountRepository.TryAdd(account);
+            var passwordHash = _cryptService.Hash(password);
+            var account = new Account { Username = username, PasswordHash = passwordHash };
+            return _accountRepository.TryAdd(account);
+        }
+        catch (InvalidAccountException)
+        {
+            return RegisterResult.InvalidInput;
+        }
     }
 
     public AccountResult ChangePassword(Account? account, string newPassword)
