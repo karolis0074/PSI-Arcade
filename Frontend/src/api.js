@@ -149,7 +149,7 @@ export const accounts = {
   getName: (username) => request('/accounts/getname', { query: { username } }),
   // sukuria nauja paskyra
   register: ({ displayName, username, password }) =>
-    request('/accounts/register', { method: 'POST', body: { displayName, username, password } }),
+    request('/accounts', { method: 'POST', body: { displayName, username, password } }),
   // prisijungia ir grazina jwt tokena
   login: ({ username, password }) =>
     request('/accounts/login', { method: 'POST', body: { username, password } }),
@@ -158,50 +158,49 @@ export const accounts = {
     request('/accounts/changename', { method: 'POST', body: { newName }, auth: true }),
   // pakeicia slaptazodi, reikia senojo slaptazodzio
   changePassword: ({ oldPassword, newPassword }) =>
-    request('/accounts/changepass', {
-      method: 'POST',
+    request('/accounts/me/password', {
+      method: 'PUT',
       body: { oldPassword, newPassword },
       auth: true,
       messages: { 401: 'Neteisingas dabartinis slaptažodis.' },
     }),
   // istrina prisijungusio vartotojo paskyra
-  remove: () => request('/accounts/delete', { method: 'DELETE', auth: true }),
+  remove: () => request('/accounts/me', { method: 'DELETE', auth: true }),
 };
 
 // zaidimu endpointai (/games)
 export const games = {
   // grazina visus zaidimus
-  getAll: () => request('/games/getall'),
+  getAll: () => request('/games'),
   // grazina viena zaidima pagal id
-  get: (id) => request('/games/get', { query: { id } }),
+  get: (id) => request(`/games/${id}`),
   // sukuria nauja zaidima, kurejas tampa seimininku ir automatiskai prisijungia
   create: ({ footballFieldId, startTime, maxPlayers }) =>
-    request('/games/create', {
+    request('/games', {
       method: 'POST',
       body: { footballFieldId, startTime, maxPlayers },
       auth: true,
     }),
   // istrina zaidima, gali tik seimininkas
   remove: (id) =>
-    request('/games/delete', {
+    request(`/games/${id}`, {
       method: 'DELETE',
-      query: { id },
       auth: true,
       messages: { 403: 'Žaidimą gali ištrinti tik jo šeimininkas.' },
     }),
   // prisijungia prie zaidimo
-  join: (id, username) => request('/games/join', { method: 'POST', query: { id, username } }),
+  join: (id) => request(`/games/${id}/players`, { method: 'POST', auth: true }),
   // iseina is zaidimo, seimininkas iseiti negali
-  leave: (id, username) => request('/games/leave', { method: 'POST', query: { id, username } }),
+  leave: (id) => request(`/games/${id}/players/me`, { method: 'DELETE', auth: true }),
 };
 
 // aikstelu endpointai (/sportfields)
 export const sportFields = {
   // grazina visas aiksteles
-  getAll: () => request('/sportfields/getall'),
+  getAll: () => request('/sportfields'),
   // grazina viena aikstele pagal id
-  get: (id) => request('/sportfields/get', { query: { id } }),
+  get: (id) => request(`/sportfields/${id}`),
   // iesko aikstelu pagal miesta, sporto saka ir dydi
   search: ({ city, gameType, fieldType }) =>
-    request('/sportfields/search', { query: { city, gameType, fieldType } }),
+    request('/sportfields', { query: { city, gameType, fieldType } }),
 };
