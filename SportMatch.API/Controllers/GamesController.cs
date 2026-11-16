@@ -49,7 +49,6 @@ public class GamesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateGameRequest request)
     {
-        // Konvertuojame DTO i Game modeli
         var game = new Game
         {
             FootballFieldId = request.FootballFieldId,
@@ -85,7 +84,6 @@ public class GamesController : ControllerBase
         if (!_gameManagerService.IsHost(GetUsername(), game))
             return Unauthorized();
 
-        // Paliekame sinchronini trynima, nes DeleteAsync metodas nebuvo sukurtas 
         var success = _gameRepository.Delete(id);
 
         if (!success)
