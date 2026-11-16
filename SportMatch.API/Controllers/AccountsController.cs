@@ -10,10 +10,10 @@ namespace SportMatch.API.Controllers;
 [Route("accounts")]
 public class AccountsController : ControllerBase
 {
-    private readonly AccountService _accountService;
-    private readonly AuthService _authService;
+    private readonly IAccountService _accountService;
+    private readonly IAuthService _authService;
 
-    public AccountsController(AccountService accountService, AuthService authService)
+    public AccountsController(IAccountService accountService, IAuthService authService)
     {
         _accountService = accountService;
         _authService = authService;

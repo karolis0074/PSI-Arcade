@@ -3,7 +3,7 @@ using SportMatch.API.Models;
 
 namespace SportMatch.API.Repositories;
 
-public class GameRepository
+public class GameRepository : IGameRepository
 {
     private readonly AppDbContext _dbContext;
 

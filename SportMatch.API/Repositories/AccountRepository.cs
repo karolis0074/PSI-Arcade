@@ -6,7 +6,7 @@ using SportMatch.API.Results;
 
 namespace SportMatch.API.Repositories;
 
-public class AccountRepository
+public class AccountRepository : IAccountRepository
 {
     private readonly AppDbContext _dbContext;
 

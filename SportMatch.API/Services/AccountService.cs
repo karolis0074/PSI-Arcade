@@ -4,12 +4,12 @@ using SportMatch.API.Results;
 
 namespace SportMatch.API.Services;
 
-public class AccountService
+public class AccountService : IAccountService
 {
-    private readonly AccountRepository _accountRepository;
-    private readonly CryptService _cryptService;
+    private readonly IAccountRepository _accountRepository;
+    private readonly ICryptService _cryptService;
 
-    public AccountService(AccountRepository accountRepository, CryptService cryptService)
+    public AccountService(IAccountRepository accountRepository, ICryptService cryptService)
     {
         _accountRepository = accountRepository;
         _cryptService = cryptService;
