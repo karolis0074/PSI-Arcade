@@ -3,6 +3,7 @@ using SportMatch.API.Models;
 using System.Collections;
 using System.Text.Json;
 using SportMatch.API.Exceptions;
+using Microsoft.EntityFrameworkCore; // Reikalinga async metodams
 
 namespace SportMatch.API.Repositories;
 
@@ -45,6 +46,14 @@ public class SportFieldRepository : IEnumerable<SportField>
         }
     }
 
+    // --- NAUJI ASYNC METODAI ---
+    public async Task<IReadOnlyList<SportField>> GetAllAsync() => 
+        await _dbContext.SportFields.ToListAsync();
+
+    public async Task<SportField?> GetByIdAsync(int id) => 
+        await _dbContext.SportFields.FirstOrDefaultAsync(f => f.Id == id);
+
+    // --- SENI METODAI 
     public IReadOnlyList<SportField> GetAll() => _dbContext.SportFields.ToList();
 
     public SportField? GetById(int id) =>

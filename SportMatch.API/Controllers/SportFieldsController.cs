@@ -16,15 +16,20 @@ public class SportFieldsController : ControllerBase
 
     // GET /sportfields/getall
     [HttpGet("getall")]
-    public IActionResult GetAll() => Ok(_sportFieldRepository.GetAll());
+    public async Task<IActionResult> GetAll() 
+    {
+        return Ok(await _sportFieldRepository.GetAllAsync());
+    }
 
     // GET /sportfields/get?id=1
     [HttpGet("get")]
-    public IActionResult GetById([FromQuery] int id)
+    public async Task<IActionResult> GetById([FromQuery] int id)
     {
-        var field = _sportFieldRepository.GetById(id);
+        var field = await _sportFieldRepository.GetByIdAsync(id);
+        
         if (field is null)
             return NotFound();
+            
         return Ok(field);
     }
 
