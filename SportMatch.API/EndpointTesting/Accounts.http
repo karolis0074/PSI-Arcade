@@ -57,6 +57,15 @@ Content-Type: application/json
   "password": "test1234"
 }
 
+### Register with invalid characters (should hit InvalidAccountException)
+POST {{SportMatch_HostAddress}}/accounts
+Content-Type: application/json
+
+{
+  "username": "bad name!",
+  "password": "test1234"
+}
+
 ### Log in with the new password, after Change password -> expect 200 with a token
 POST {{SportMatch_HostAddress}}/accounts/login
 Content-Type: application/json
