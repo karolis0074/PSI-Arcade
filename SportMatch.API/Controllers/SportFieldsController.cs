@@ -14,16 +14,20 @@ public class SportFieldsController : ControllerBase
         _sportFieldRepository = sportFieldRepository;
     }
 
-    // GET /sportfields/getall
-    [HttpGet("getall")]
-    public async Task<IActionResult> GetAll() 
+    // GET /sportfields
+    // GET /sportfields?city=Vilnius&gameType=Football
+    [HttpGet]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? city = null,
+        [FromQuery] string? gameType = null,
+        [FromQuery] string? fieldType = null)
     {
-        return Ok(await _sportFieldRepository.GetAllAsync());
+        return Ok(_sportFieldRepository.Search(city, gameType, fieldType));
     }
 
-    // GET /sportfields/get?id=1
-    [HttpGet("get")]
-    public async Task<IActionResult> GetById([FromQuery] int id)
+    // GET /sportfields/1
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
     {
         var field = await _sportFieldRepository.GetByIdAsync(id);
         
@@ -31,15 +35,5 @@ public class SportFieldsController : ControllerBase
             return NotFound();
             
         return Ok(field);
-    }
-
-    // GET /sportfields/search?city=Vilnius&gameType=Football
-    [HttpGet("search")]
-    public IActionResult Search(
-        [FromQuery] string? city,
-        [FromQuery] string? gameType,
-        [FromQuery] string? fieldType)
-    {
-        return Ok(_sportFieldRepository.Search(city, gameType, fieldType));
     }
 }
