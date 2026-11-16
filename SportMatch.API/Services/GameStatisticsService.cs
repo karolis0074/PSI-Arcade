@@ -6,9 +6,9 @@ namespace SportMatch.API.Services;
 
 public class GameStatisticsService
 {
-    private readonly GameRepository _gameRepository;
+    private readonly IGameRepository _gameRepository;
 
-    public GameStatisticsService(GameRepository gameRepository)
+    public GameStatisticsService(IGameRepository gameRepository)
     {
         _gameRepository = gameRepository;
     }

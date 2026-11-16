@@ -7,10 +7,10 @@ namespace SportMatch.API.Services;
 
 public class GameManagerService
 {
-    private readonly GameRepository _gameRepository;
-    private readonly SportFieldRepository _sportFieldRepository;
+    private readonly IGameRepository _gameRepository;
+    private readonly ISportFieldRepository _sportFieldRepository;
 
-    public GameManagerService(GameRepository gameRepository, SportFieldRepository sportFieldRepository)
+    public GameManagerService(IGameRepository gameRepository, ISportFieldRepository sportFieldRepository)
     {
         _gameRepository = gameRepository;
         _sportFieldRepository = sportFieldRepository;

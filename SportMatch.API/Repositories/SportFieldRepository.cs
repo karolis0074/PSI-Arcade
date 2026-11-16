@@ -6,7 +6,7 @@ using SportMatch.API.Exceptions;
 
 namespace SportMatch.API.Repositories;
 
-public class SportFieldRepository : IEnumerable<SportField>
+public class SportFieldRepository : ISportFieldRepository
 {
     private readonly AppDbContext _dbContext;
 

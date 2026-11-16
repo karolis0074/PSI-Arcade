@@ -7,7 +7,7 @@ using System.Text;
 
 namespace SportMatch.API.Services;
 
-public class CryptService
+public class CryptService : ICryptService
 {
     private readonly IPasswordHasher<object> _hasher;          // the TUser type param is not used in the default methods, so safe to pass null! below
     private readonly JwtSecurityTokenHandler _tokenHandler;
