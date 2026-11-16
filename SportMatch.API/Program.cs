@@ -60,7 +60,7 @@ try
     db.Database.Migrate();
 
     // creating the repository runs SeedIfEmpty(), which can throw SportFieldDataException
-    scope.ServiceProvider.GetRequiredService<SportFieldRepository>();
+    scope.ServiceProvider.GetRequiredService<ISportFieldRepository>();
 }
 catch (SportFieldDataException ex)
 {

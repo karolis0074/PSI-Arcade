@@ -5,7 +5,7 @@ using SportMatch.API.Results;
 
 namespace SportMatch.API.Services;
 
-public class GameManagerService
+public class GameManagerService :IGameManagerService
 {
     private readonly IGameRepository _gameRepository;
     private readonly ISportFieldRepository _sportFieldRepository;

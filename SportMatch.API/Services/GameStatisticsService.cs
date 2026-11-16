@@ -4,7 +4,7 @@ using SportMatch.API.Repositories;
 
 namespace SportMatch.API.Services;
 
-public class GameStatisticsService
+public class GameStatisticsService : IGameStatisticsService
 {
     private readonly IGameRepository _gameRepository;
 
