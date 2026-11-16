@@ -34,17 +34,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // repositories
-builder.Services.AddScoped<SportFieldRepository>();
-builder.Services.AddScoped<GameRepository>();
-builder.Services.AddScoped<AccountRepository>();
+builder.Services.AddScoped<ISportFieldRepository, SportFieldRepository>();
+builder.Services.AddScoped<IGameRepository, GameRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 
 // services
-builder.Services.AddScoped<GameMembershipService>();
-builder.Services.AddScoped<GameManagerService>();
-builder.Services.AddScoped<GameStatisticsService>();
-builder.Services.AddScoped<AccountService>();
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddSingleton<CryptService>();
+builder.Services.AddScoped<IGameMembershipService, GameMembershipService>();
+builder.Services.AddScoped<IGameManagerService, GameManagerService>();
+builder.Services.AddScoped<IGameStatisticsService, GameStatisticsService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddSingleton<ICryptService, CryptService>();
 
 // dependencies of CryptService, injected instead of created with new
 builder.Services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
