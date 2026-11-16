@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SportMatch.API.Data;
+using SportMatch.API.Exceptions;
 using SportMatch.API.Repositories;
 using SportMatch.API.Services;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using SportMatch.API.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,18 +29,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 builder.Services.AddAuthorization();
 
+// connection string comes from appsettings.json instead of being hardcoded
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=app.db"));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// repositories
 builder.Services.AddScoped<SportFieldRepository>();
 builder.Services.AddScoped<GameRepository>();
 builder.Services.AddScoped<AccountRepository>();
+
+// services
 builder.Services.AddScoped<GameMembershipService>();
 builder.Services.AddScoped<GameManagerService>();
 builder.Services.AddScoped<GameStatisticsService>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddSingleton<CryptService>();
+
+// dependencies of CryptService, injected instead of created with new
+builder.Services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
+builder.Services.AddSingleton<JwtSecurityTokenHandler>();
 
 var app = builder.Build();
 
