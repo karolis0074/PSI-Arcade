@@ -3,11 +3,9 @@ using SportMatch.API.Results;
 
 namespace SportMatch.API.Repositories
 {
-    public interface IAccountRepository
+    public interface IAccountRepository : IRepository<Account>
     {
-        public Account? GetByUsername(string username);
-        public RegisterResult Add(Account account);
-        public void Update(Account account);
-        public AccountResult Delete(string username);
+        Account? GetByUsername(string username);
+        RegisterResult TryAdd(Account account);
     }
 }
