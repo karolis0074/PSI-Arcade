@@ -10,9 +10,9 @@ namespace SportMatch.API.Controllers;
 [Route("games")]
 public class GamesController : ControllerBase
 {
-    private readonly GameManagerService _gameManagerService;
+    private readonly IGameManagerService _gameManagerService;
 
-    public GamesController(GameManagerService gameManagerService)
+    public GamesController(IGameManagerService gameManagerService)
     {
         _gameManagerService = gameManagerService;
     }

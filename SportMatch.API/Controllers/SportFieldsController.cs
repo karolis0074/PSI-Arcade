@@ -7,9 +7,9 @@ namespace SportMatch.API.Controllers;
 [Route("sportfields")]
 public class SportFieldsController : ControllerBase
 {
-    private readonly SportFieldRepository _sportFieldRepository;
+    private readonly ISportFieldRepository _sportFieldRepository;
 
-    public SportFieldsController(SportFieldRepository sportFieldRepository)
+    public SportFieldsController(ISportFieldRepository sportFieldRepository)
     {
         _sportFieldRepository = sportFieldRepository;
     }

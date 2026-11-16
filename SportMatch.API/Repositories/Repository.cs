@@ -4,7 +4,7 @@ using SportMatch.API.Data;
 namespace SportMatch.API.Repositories;
 
 // generic repository: the shared CRUD code is written once and works for any entity type T
-public class Repository<T> where T : class
+public class Repository<T> : IRepository<T> where T : class
 {
     protected readonly AppDbContext _dbContext;
     protected readonly DbSet<T> _set;

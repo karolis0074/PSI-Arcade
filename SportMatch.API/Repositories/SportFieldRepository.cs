@@ -7,7 +7,7 @@ using SportMatch.API.Exceptions;
 namespace SportMatch.API.Repositories;
 
 // GetAll and GetById are inherited from Repository<SportField>, only field-specific logic stays here
-public class SportFieldRepository : Repository<SportField>, IEnumerable<SportField>
+public class SportFieldRepository : Repository<SportField>, ISportFieldRepository
 {
     public SportFieldRepository(AppDbContext dbContext) : base(dbContext)
     {

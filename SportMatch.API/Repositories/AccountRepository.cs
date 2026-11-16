@@ -8,7 +8,7 @@ namespace SportMatch.API.Repositories;
 
 // GetById, GetAll, Update and Delete are inherited from Repository<Account>.
 // Only the username lookup and the duplicate-checked register stay here.
-public class AccountRepository : Repository<Account>
+public class AccountRepository : Repository<Account>, IAccountRepository
 {
     public AccountRepository(AppDbContext dbContext) : base(dbContext)
     {

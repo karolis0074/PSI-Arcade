@@ -5,12 +5,12 @@ using SportMatch.API.Results;
 
 namespace SportMatch.API.Services;
 
-public class GameMembershipService
+public class GameMembershipService : IGameMembershipService
 {
     // DI — GameRepository comes through the constructor
-    private readonly GameRepository _gameRepository;
+    private readonly IGameRepository _gameRepository;
 
-    public GameMembershipService(GameRepository gameRepository)
+    public GameMembershipService(IGameRepository gameRepository)
     {
         _gameRepository = gameRepository;
     }
