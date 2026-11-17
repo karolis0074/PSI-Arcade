@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SportMatch.API.DataTransferObjects.Requests;
-using SportMatch.API.Results;
+using SportMatch.API.Data;
+using SportMatch.API.Models;
+using SportMatch.API.Repositories;
 using SportMatch.API.Services;
+using Microsoft.EntityFrameworkCore;
+using SportMatch.API.DataTransferObjects.Requests;
 
 namespace SportMatch.API.Controllers;
 
@@ -10,24 +13,30 @@ namespace SportMatch.API.Controllers;
 [Route("games")]
 public class GamesController : ControllerBase
 {
+    private string GetUsername() => User.Identity!.Name!;
+    private readonly GameRepository _gameRepository;
+    private readonly AppDbContext _dbContext;
     private readonly IGameManagerService _gameManagerService;
 
-    public GamesController(IGameManagerService gameManagerService)
+    public GamesController(GameRepository gameRepository, AppDbContext dbContext, IGameManagerService gameManagerService)
     {
+        _gameRepository = gameRepository;
+        _dbContext = dbContext;
         _gameManagerService = gameManagerService;
     }
 
-    private string GetUsername() => User.Identity!.Name!;
-
     // GET /games
     [HttpGet]
-    public IActionResult GetAll() => Ok(_gameManagerService.GetAll());
+    public async Task<IActionResult> GetAll() 
+    {
+        return Ok(await _gameRepository.GetAllAsync());
+    }
 
     // GET /games/1
     [HttpGet("{id}")]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(int id)
     {
-        var game = _gameManagerService.GetById(id);
+        var game = await _gameRepository.GetByIdAsync(id);
 
         if (game is null)
             return NotFound();
@@ -38,29 +47,49 @@ public class GamesController : ControllerBase
     // POST /games
     [Authorize]
     [HttpPost]
-    public IActionResult Create(CreateGameRequest request)
+    public async Task<IActionResult> Create(CreateGameRequest request)
     {
-        var result = _gameManagerService.Create(GetUsername(), request);
+        var game = new Game
+        {
+            FootballFieldId = request.FootballFieldId,
+            StartTime = request.StartTime,
+            MaxPlayers = request.MaxPlayers,
+            CreatedByUsername = GetUsername()
+        };
 
-        if (result.Game is null)
-            return BadRequest(result.Error);
+        if (game.MaxPlayers <= 0)
+            return BadRequest("MaxPlayers must be greater than 0");
 
-        return CreatedAtAction(nameof(GetById), new { id = result.Game.Id }, result.Game);
+        if (game.StartTime <= DateTime.UtcNow)
+            return BadRequest("StartTime must be in the future");
+
+        // Patikriname, ar aikštelė egzistuoja per _dbContext
+        var field = await _dbContext.SportFields.FirstOrDefaultAsync(f => f.Id == game.FootballFieldId);
+        if (field is null)
+            return BadRequest("Football field not found");
+
+        var created = await _gameRepository.AddAsync(game);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     // DELETE /games/1
     [Authorize]
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        var result = _gameManagerService.Delete(id, GetUsername());
+        var game = await _gameRepository.GetByIdAsync(id);
 
-        return result switch
-        {
-            DeleteGameResult.Success => NoContent(),
-            DeleteGameResult.NotFound => NotFound(),
-            DeleteGameResult.NotHost => Forbid(),   // 403
-            _ => StatusCode(500)
-        };
+        if (game is null)
+            return NotFound();
+
+        if (!_gameManagerService.IsHost(GetUsername(), game))
+            return Unauthorized();
+
+        var success = _gameRepository.Delete(id);
+
+        if (!success)
+            return NotFound();
+
+        return NoContent();
     }
 }
