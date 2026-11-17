@@ -88,3 +88,26 @@ Content-Type: application/json
 DELETE {{SportMatch_HostAddress}}/accounts/me
 Authorization: Bearer {{login.response.body.$.token}}
 ###
+
+### Login
+# @name login
+POST {{SportMatch_HostAddress}}/accounts/login
+Content-Type: application/json
+
+{
+  "username": "karolis123",
+  "password": "test1234"
+}
+
+### 1. Check initial live user count (expect 0)
+GET {{SportMatch_HostAddress}}/metrics/active-users
+
+### 2. Check count after login (expect 1)
+GET {{SportMatch_HostAddress}}/metrics/active-users
+
+### 3. Logout (requires token)
+POST {{SportMatch_HostAddress}}/accounts/logout
+Authorization: Bearer {{login.response.body.$.token}}
+
+### 4. Check count after logout (expect 0)
+GET {{SportMatch_HostAddress}}/metrics/active-users
