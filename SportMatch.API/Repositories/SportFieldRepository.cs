@@ -3,23 +3,20 @@ using SportMatch.API.Models;
 using System.Collections;
 using System.Text.Json;
 using SportMatch.API.Exceptions;
-using Microsoft.EntityFrameworkCore; // Reikalinga async metodams
+using Microsoft.EntityFrameworkCore;
 
 namespace SportMatch.API.Repositories;
 
-public class SportFieldRepository : IEnumerable<SportField>
+public class SportFieldRepository : Repository<SportField>, ISportFieldRepository
 {
-    private readonly AppDbContext _dbContext;
-
-    public SportFieldRepository(AppDbContext dbContext)
+    public SportFieldRepository(AppDbContext dbContext) : base(dbContext)
     {
-        _dbContext = dbContext;
         SeedIfEmpty();
     }
 
     private void SeedIfEmpty()
     {
-        if (_dbContext.SportFields.Any())
+        if (_set.Any())
             return;
 
         try
@@ -33,7 +30,7 @@ public class SportFieldRepository : IEnumerable<SportField>
             if (fields is null || fields.Count == 0)
                 throw new SportFieldDataException("sportfields.json contains no sport fields.");
 
-            _dbContext.SportFields.AddRange(fields);
+            _set.AddRange(fields);
             _dbContext.SaveChanges();
         }
         catch (FileNotFoundException ex)
@@ -46,22 +43,15 @@ public class SportFieldRepository : IEnumerable<SportField>
         }
     }
 
-    // --- NAUJI ASYNC METODAI ---
     public async Task<IReadOnlyList<SportField>> GetAllAsync() => 
         await _dbContext.SportFields.ToListAsync();
 
     public async Task<SportField?> GetByIdAsync(int id) => 
         await _dbContext.SportFields.FirstOrDefaultAsync(f => f.Id == id);
 
-    // --- SENI METODAI 
-    public IReadOnlyList<SportField> GetAll() => _dbContext.SportFields.ToList();
-
-    public SportField? GetById(int id) =>
-        _dbContext.SportFields.FirstOrDefault(f => f.Id == id);
-
     public IReadOnlyList<SportField> Search(string? city = null, string? gameType = null, string? fieldType = null)
     {
-        var query = _dbContext.SportFields.AsQueryable();
+        var query = _set.AsQueryable();
 
         if (!string.IsNullOrEmpty(city))
             query = query.Where(f => f.City.ToLower() == city.ToLower());
@@ -76,7 +66,7 @@ public class SportFieldRepository : IEnumerable<SportField>
     }
 
     public IEnumerator<SportField> GetEnumerator() =>
-        _dbContext.SportFields.AsEnumerable().GetEnumerator();
+        _set.AsEnumerable().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

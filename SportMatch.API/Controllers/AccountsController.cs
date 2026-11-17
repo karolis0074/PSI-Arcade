@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportMatch.API.DataTransferObjects.Requests;
+using SportMatch.API.Exceptions;
 using SportMatch.API.Results;
 using SportMatch.API.Services;
 
@@ -10,10 +11,10 @@ namespace SportMatch.API.Controllers;
 [Route("accounts")]
 public class AccountsController : ControllerBase
 {
-    private readonly AccountService _accountService;
-    private readonly AuthService _authService;
+    private readonly IAccountService _accountService;
+    private readonly IAuthService _authService;
 
-    public AccountsController(AccountService accountService, AuthService authService)
+    public AccountsController(IAccountService accountService, IAuthService authService)
     {
         _accountService = accountService;
         _authService = authService;
@@ -25,18 +26,25 @@ public class AccountsController : ControllerBase
     [HttpPost]
     public IActionResult Register(RegisterRequest request)
     {
-        var result = _accountService.Register(
-            request.Username,
-            request.Password
-        );
-
-        return result switch
+        try
         {
-            RegisterResult.Success => Ok(),
-            RegisterResult.UsernameTaken => Conflict(),
-            RegisterResult.InvalidInput => BadRequest(),
-            _ => StatusCode(500)
-        };
+            var result = _accountService.Register(
+                request.Username,
+                request.Password
+            );
+
+            return result switch
+            {
+                RegisterResult.Success => Ok(),
+                RegisterResult.UsernameTaken => Conflict(),
+                RegisterResult.InvalidInput => BadRequest(),
+                _ => StatusCode(500)
+            };
+        }
+        catch (InvalidAccountException ex)
+        {
+            return BadRequest(ex.Message); // tells the client what was wrong
+        }
     }
 
     // POST /accounts/login

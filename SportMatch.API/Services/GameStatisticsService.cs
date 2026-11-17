@@ -4,11 +4,11 @@ using SportMatch.API.Repositories;
 
 namespace SportMatch.API.Services;
 
-public class GameStatisticsService
+public class GameStatisticsService : IGameStatisticsService
 {
-    private readonly GameRepository _gameRepository;
+    private readonly IGameRepository _gameRepository;
 
-    public GameStatisticsService(GameRepository gameRepository)
+    public GameStatisticsService(IGameRepository gameRepository)
     {
         _gameRepository = gameRepository;
     }

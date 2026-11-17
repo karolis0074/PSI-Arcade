@@ -6,27 +6,26 @@ using SportMatch.API.Results;
 
 namespace SportMatch.API.Repositories;
 
-public class AccountRepository
+// GetById, GetAll, Update and Delete are inherited from Repository<Account>.
+// Only the username lookup and the duplicate-checked register stay here.
+public class AccountRepository : Repository<Account>, IAccountRepository
 {
-    private readonly AppDbContext _dbContext;
-
-    public AccountRepository(AppDbContext dbContext)
+    public AccountRepository(AppDbContext dbContext) : base(dbContext)
     {
-        _dbContext = dbContext;
     }
 
     // username column is NOCASE, so this lookup is case-insensitive
     public Account? GetByUsername(string username) =>
-        _dbContext.Accounts.FirstOrDefault(a => a.Username == username);
+        _set.FirstOrDefault(a => a.Username == username);
 
-    public RegisterResult Add(Account account)
+    public RegisterResult TryAdd(Account account)
     {
         if (account is null)
             return RegisterResult.InvalidInput;
         if (GetByUsername(account.Username) is not null)
             return RegisterResult.UsernameTaken;
 
-        _dbContext.Accounts.Add(account);
+        _set.Add(account);
 
         try
         {
@@ -38,22 +37,5 @@ public class AccountRepository
         }
 
         return RegisterResult.Success;
-    }
-
-    public void Update(Account account)
-    {
-        _dbContext.Accounts.Update(account);
-        _dbContext.SaveChanges();
-    }
-
-    public AccountResult Delete(string username)
-    {
-        var account = GetByUsername(username);
-        if (account is null)
-            return AccountResult.NotFound;
-
-        _dbContext.Accounts.Remove(account);
-        _dbContext.SaveChanges();
-        return AccountResult.Success;
     }
 }

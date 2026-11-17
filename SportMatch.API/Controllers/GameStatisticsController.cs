@@ -7,9 +7,9 @@ namespace SportMatch.API.Controllers;
 [Route("games")]
 public class GameStatisticsController : ControllerBase
 {
-    private readonly GameStatisticsService _statisticsService;
+    private readonly IGameStatisticsService _statisticsService;
 
-    public GameStatisticsController(GameStatisticsService statisticsService)
+    public GameStatisticsController(IGameStatisticsService statisticsService)
     {
         _statisticsService = statisticsService;
     }

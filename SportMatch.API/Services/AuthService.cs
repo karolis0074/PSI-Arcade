@@ -3,12 +3,12 @@ using SportMatch.API.Repositories;
 
 namespace SportMatch.API.Services;
 
-public class AuthService
+public class AuthService : IAuthService
 {
-    private readonly AccountRepository _accountRepository;
-    private readonly CryptService _cryptService;
+    private readonly IAccountRepository _accountRepository;
+    private readonly ICryptService _cryptService;
 
-    public AuthService(AccountRepository accountRepository, CryptService cryptService)
+    public AuthService(IAccountRepository accountRepository, ICryptService cryptService)
     {
         _accountRepository = accountRepository;
         _cryptService = cryptService;

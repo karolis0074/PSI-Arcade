@@ -10,9 +10,9 @@ namespace SportMatch.API.Controllers;
 [Route("games")]
 public class GameMembershipController : ControllerBase
 {
-    private readonly GameMembershipService _membershipService;
+    private readonly IGameMembershipService _membershipService;
 
-    public GameMembershipController(GameMembershipService membershipService)
+    public GameMembershipController(IGameMembershipService membershipService)
     {
         _membershipService = membershipService;
     }

@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SportMatch.API.Data;
+using SportMatch.API.Exceptions;
 using SportMatch.API.Repositories;
 using SportMatch.API.Services;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using SportMatch.API.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,18 +29,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 builder.Services.AddAuthorization();
 
+// connection string comes from appsettings.json instead of being hardcoded
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=app.db"));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<SportFieldRepository>();
-builder.Services.AddScoped<GameRepository>();
-builder.Services.AddScoped<AccountRepository>();
-builder.Services.AddScoped<GameMembershipService>();
-builder.Services.AddScoped<GameManagerService>();
-builder.Services.AddScoped<GameStatisticsService>();
-builder.Services.AddScoped<AccountService>();
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddSingleton<CryptService>();
+// repositories
+builder.Services.AddScoped<ISportFieldRepository, SportFieldRepository>();
+builder.Services.AddScoped<IGameRepository, GameRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+
+// services
+builder.Services.AddScoped<IGameMembershipService, GameMembershipService>();
+builder.Services.AddScoped<IGameManagerService, GameManagerService>();
+builder.Services.AddScoped<IGameStatisticsService, GameStatisticsService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddSingleton<ICryptService, CryptService>();
+
+// dependencies of CryptService, injected instead of created with new
+builder.Services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
+builder.Services.AddSingleton<JwtSecurityTokenHandler>();
 
 var app = builder.Build();
 
@@ -50,7 +60,7 @@ try
     db.Database.Migrate();
 
     // creating the repository runs SeedIfEmpty(), which can throw SportFieldDataException
-    scope.ServiceProvider.GetRequiredService<SportFieldRepository>();
+    scope.ServiceProvider.GetRequiredService<ISportFieldRepository>();
 }
 catch (SportFieldDataException ex)
 {

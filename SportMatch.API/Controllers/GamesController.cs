@@ -16,9 +16,9 @@ public class GamesController : ControllerBase
     private string GetUsername() => User.Identity!.Name!;
     private readonly GameRepository _gameRepository;
     private readonly AppDbContext _dbContext;
-    private readonly GameManagerService _gameManagerService;
+    private readonly IGameManagerService _gameManagerService;
 
-    public GamesController(GameRepository gameRepository, AppDbContext dbContext, GameManagerService gameManagerService)
+    public GamesController(GameRepository gameRepository, AppDbContext dbContext, IGameManagerService gameManagerService)
     {
         _gameRepository = gameRepository;
         _dbContext = dbContext;
@@ -63,6 +63,7 @@ public class GamesController : ControllerBase
         if (game.StartTime <= DateTime.UtcNow)
             return BadRequest("StartTime must be in the future");
 
+        // Patikriname, ar aikštelė egzistuoja per _dbContext
         var field = await _dbContext.SportFields.FirstOrDefaultAsync(f => f.Id == game.FootballFieldId);
         if (field is null)
             return BadRequest("Football field not found");

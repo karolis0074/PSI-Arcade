@@ -32,4 +32,59 @@ Content-Type: application/json
 ### Delete account (requires token)
 DELETE {{SportMatch_HostAddress}}/accounts/me
 Authorization: Bearer {{login.response.body.$.token}}
+
+# ---------------------------------------------------------------
+# Extra checks. Run them in this order:
+# Register -> the two "again" requests -> Login -> Change password
+# -> the two login checks -> Delete account -> "Delete again".
+# ---------------------------------------------------------------
+
+### Register the same username again -> expect 409 Conflict
+POST {{SportMatch_HostAddress}}/accounts
+Content-Type: application/json
+
+{
+  "username": "karolis123",
+  "password": "test1234"
+}
+
+### Register the same username in capitals -> expect 409 Conflict (usernames ignore case)
+POST {{SportMatch_HostAddress}}/accounts
+Content-Type: application/json
+
+{
+  "username": "KAROLIS123",
+  "password": "test1234"
+}
+
+### Register with invalid characters (should hit InvalidAccountException)
+POST {{SportMatch_HostAddress}}/accounts
+Content-Type: application/json
+
+{
+  "username": "bad name!",
+  "password": "test1234"
+}
+
+### Log in with the new password, after Change password -> expect 200 with a token
+POST {{SportMatch_HostAddress}}/accounts/login
+Content-Type: application/json
+
+{
+  "username": "karolis123",
+  "password": "newPassword1"
+}
+
+### Log in with the old password, after Change password -> expect 401 Unauthorized
+POST {{SportMatch_HostAddress}}/accounts/login
+Content-Type: application/json
+
+{
+  "username": "karolis123",
+  "password": "test1234"
+}
+
+### Delete the account again, after Delete account -> expect 404 Not Found
+DELETE {{SportMatch_HostAddress}}/accounts/me
+Authorization: Bearer {{login.response.body.$.token}}
 ###
