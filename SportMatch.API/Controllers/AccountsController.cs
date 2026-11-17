@@ -13,11 +13,13 @@ public class AccountsController : ControllerBase
 {
     private readonly IAccountService _accountService;
     private readonly IAuthService _authService;
+    private readonly LiveMetricsService _metrics; 
 
-    public AccountsController(IAccountService accountService, IAuthService authService)
+    public AccountsController(IAccountService accountService, IAuthService authService, LiveMetricsService metrics)
     {
         _accountService = accountService;
         _authService = authService;
+        _metrics = metrics;
     }
 
     private string GetUsername() => User.Identity!.Name!;
@@ -55,7 +57,17 @@ public class AccountsController : ControllerBase
         if (token is null)
             return Unauthorized();
 
+        _metrics.UserConnected(); // Padidiname aktyvių vartotojų skaičių
+
         return Ok(new { token }); // returns jwt token
+    }
+
+    // POST /accounts/logout
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        _metrics.UserDisconnected(); //Sumažiname aktyvių vartotojų skaičių
+        return Ok(new { message = "Sėkmingai atsijungta" });
     }
 
     // PUT /accounts/me/password
