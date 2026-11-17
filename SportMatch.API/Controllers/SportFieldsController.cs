@@ -14,10 +14,8 @@ public class SportFieldsController : ControllerBase
         _sportFieldRepository = sportFieldRepository;
     }
 
-    // GET /sportfields
-    // GET /sportfields?city=Vilnius&gameType=Football
     [HttpGet]
-    public async Task<IActionResult> GetAll(
+    public IActionResult GetAll(
         [FromQuery] string? city = null,
         [FromQuery] string? gameType = null,
         [FromQuery] string? fieldType = null)
@@ -25,11 +23,10 @@ public class SportFieldsController : ControllerBase
         return Ok(_sportFieldRepository.Search(city, gameType, fieldType));
     }
 
-    // GET /sportfields/1
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
+    public IActionResult GetById(int id)
     {
-        var field = await _sportFieldRepository.GetByIdAsync(id);
+        var field = _sportFieldRepository.GetById(id);
         
         if (field is null)
             return NotFound();
