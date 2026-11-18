@@ -9,11 +9,13 @@ public class GameManagerService :IGameManagerService
 {
     private readonly IGameRepository _gameRepository;
     private readonly ISportFieldRepository _sportFieldRepository;
+    private readonly IClock _clock;
 
-    public GameManagerService(IGameRepository gameRepository, ISportFieldRepository sportFieldRepository)
+    public GameManagerService(IGameRepository gameRepository, ISportFieldRepository sportFieldRepository, IClock clock)
     {
         _gameRepository = gameRepository;
         _sportFieldRepository = sportFieldRepository;
+        _clock = clock;
     }
 
     public IReadOnlyList<Game> GetAll() => _gameRepository.GetAll();
@@ -22,7 +24,7 @@ public class GameManagerService :IGameManagerService
 
     public CreateGameResult Create(string username, CreateGameRequest request)
     {
-        if (request.StartTime <= DateTime.UtcNow)
+        if (request.StartTime <= _clock.UtcNow)
             return new CreateGameResult(null, "StartTime must be in the future");
 
         var field = _sportFieldRepository.GetById(request.FootballFieldId);

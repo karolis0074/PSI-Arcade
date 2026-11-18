@@ -16,17 +16,18 @@ public class GameManagerServiceTests
 
     private readonly FakeGameRepository _gameRepository = new();
     private readonly FakeSportFieldRepository _fieldRepository = new();
+    private readonly FakeClock _clock = new();
     private readonly GameManagerService _service;
 
     // xUnit creates a new instance for every test, so every test starts with clean fakes
     public GameManagerServiceTests()
     {
         _fieldRepository.Add(new SportField { Id = FieldId, Name = "Test field", Capacity = FieldCapacity });
-        _service = new GameManagerService(_gameRepository, _fieldRepository);
+        _service = new GameManagerService(_gameRepository, _fieldRepository, _clock);
     }
 
-    private static CreateGameRequest ValidRequest(int maxPlayers = 4) =>
-        new(FieldId, DateTime.UtcNow.AddDays(1), maxPlayers);
+    private CreateGameRequest ValidRequest(int maxPlayers = 4) =>
+        new(FieldId, _clock.UtcNow.AddDays(1), maxPlayers);
 
     // puts a game straight into the fake repository
     private Game AddGame(string host)
@@ -35,7 +36,7 @@ public class GameManagerServiceTests
         {
             FootballFieldId = FieldId,
             CreatedByUsername = host,
-            StartTime = DateTime.UtcNow.AddDays(1),
+            StartTime = _clock.UtcNow.AddDays(1),
             MaxPlayers = 4
         });
     }
@@ -63,7 +64,19 @@ public class GameManagerServiceTests
     [Fact]
     public void Create_StartTimeInPast_ReturnsErrorAndDoesNotSave()
     {
-        var request = new CreateGameRequest(FieldId, DateTime.UtcNow.AddHours(-1), 4);
+        var request = new CreateGameRequest(FieldId, _clock.UtcNow.AddHours(-1), 4);
+
+        var result = _service.Create("host", request);
+
+        Assert.Null(result.Game);
+        Assert.Equal("StartTime must be in the future", result.Error);
+        Assert.Empty(_service.GetAll());
+    }
+
+    [Fact]
+    public void Create_StartTimeIsNow_ReturnsErrorAndDoesNotSave()
+    {
+        var request = new CreateGameRequest(FieldId, _clock.UtcNow, 4);
 
         var result = _service.Create("host", request);
 
@@ -75,7 +88,7 @@ public class GameManagerServiceTests
     [Fact]
     public void Create_FieldDoesNotExist_ReturnsErrorAndDoesNotSave()
     {
-        var request = new CreateGameRequest(999, DateTime.UtcNow.AddDays(1), 4);
+        var request = new CreateGameRequest(999, _clock.UtcNow.AddDays(1), 4);
 
         var result = _service.Create("host", request);
 
@@ -167,6 +180,16 @@ public class GameManagerServiceTests
     }
 
     [Fact]
+    public void GetHostUsername_GameObjectGiven_ReturnsCreator()
+    {
+        var game = AddGame(host: "host");
+
+        var host = _service.GetHostUsername(game);
+
+        Assert.Equal("host", host);
+    }
+
+    [Fact]
     public void GetHostUsername_GameDoesNotExist_ReturnsNull()
     {
         const int missingId = 999;
@@ -178,22 +201,36 @@ public class GameManagerServiceTests
 
     // ---------- IsHost ----------
 
-    [Fact]
-    public void IsHost_UserIsCreator_ReturnsTrue()
+    [Theory]
+    [InlineData("host", true)]
+    [InlineData("jonas", false)]
+    public void IsHost_GameIdGiven_ReturnsTrueOnlyForCreator(string username, bool expected)
     {
         var game = AddGame(host: "host");
 
-        var isHost = _service.IsHost("host", game.Id);
+        var isHost = _service.IsHost(username, game.Id);
 
-        Assert.True(isHost);
+        Assert.Equal(expected, isHost);
+    }
+
+    [Theory]
+    [InlineData("host", true)]
+    [InlineData("jonas", false)]
+    public void IsHost_GameObjectGiven_ReturnsTrueOnlyForCreator(string username, bool expected)
+    {
+        var game = AddGame(host: "host");
+
+        var isHost = _service.IsHost(username, game);
+
+        Assert.Equal(expected, isHost);
     }
 
     [Fact]
-    public void IsHost_UserIsNotCreator_ReturnsFalse()
+    public void IsHost_UsernameIsNull_ReturnsFalse()
     {
         var game = AddGame(host: "host");
 
-        var isHost = _service.IsHost("jonas", game.Id);
+        var isHost = _service.IsHost(null!, game.Id);
 
         Assert.False(isHost);
     }

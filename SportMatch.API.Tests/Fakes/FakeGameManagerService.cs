@@ -5,8 +5,8 @@ using SportMatch.API.Services;
 
 namespace SportMatch.API.Tests.Fakes;
 
-// fake service for controller tests: keeps games in a list and has only the
-// simplest logic, so the controller's responses depend on who is logged in
+// fake service for controller tests: keeps games in a list, and the results of
+// Create and Delete are set by the test, so no business logic is copied here
 public class FakeGameManagerService : IGameManagerService
 {
     private readonly List<Game> _games = new();
@@ -14,6 +14,9 @@ public class FakeGameManagerService : IGameManagerService
 
     // when set, Create fails with this error message
     public string? CreateError { get; set; }
+
+    // the result Delete returns
+    public DeleteGameResult DeleteResult { get; set; } = DeleteGameResult.Success;
 
     public Game AddGame(string host)
     {
@@ -43,17 +46,7 @@ public class FakeGameManagerService : IGameManagerService
         return new CreateGameResult(game, null);
     }
 
-    public DeleteGameResult Delete(int id, string username)
-    {
-        var game = GetById(id);
-        if (game is null)
-            return DeleteGameResult.NotFound;
-        if (game.CreatedByUsername != username)
-            return DeleteGameResult.NotHost;
-
-        _games.Remove(game);
-        return DeleteGameResult.Success;
-    }
+    public DeleteGameResult Delete(int id, string username) => DeleteResult;
 
     public string? GetHostUsername(Game game) => game.CreatedByUsername;
     public string? GetHostUsername(int id) => GetById(id)?.CreatedByUsername;

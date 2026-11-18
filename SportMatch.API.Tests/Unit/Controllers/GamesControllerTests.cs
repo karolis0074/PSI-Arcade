@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SportMatch.API.Controllers;
 using SportMatch.API.DataTransferObjects.Requests;
 using SportMatch.API.Models;
+using SportMatch.API.Results;
 using SportMatch.API.Tests.Fakes;
 
 namespace SportMatch.API.Tests.Unit.Controllers;
@@ -28,7 +29,8 @@ public class GamesControllerTests
         };
     }
 
-    private static CreateGameRequest ValidRequest() => new(1, DateTime.UtcNow.AddDays(1), 4);
+    // fixed date: the fake service does not check time, so the test never depends on the clock
+    private static CreateGameRequest ValidRequest() => new(1, new DateTime(2026, 1, 2, 12, 0, 0, DateTimeKind.Utc), 4);
 
     // ---------- GET ----------
 
@@ -61,9 +63,10 @@ public class GamesControllerTests
     [Fact]
     public void GetById_GameDoesNotExist_ReturnsNotFound()
     {
+        const int missingId = 999;
         var controller = CreateController("jonas");
 
-        var result = controller.GetById(999);
+        var result = controller.GetById(missingId);
 
         Assert.IsType<NotFoundResult>(result);
     }
@@ -101,35 +104,34 @@ public class GamesControllerTests
     // ---------- DELETE ----------
 
     [Fact]
-    public void Delete_UserIsHost_ReturnsNoContentAndGameIsGone()
+    public void Delete_ServiceReturnsSuccess_ReturnsNoContent()
     {
-        var game = _service.AddGame(host: "petras");
+        _service.DeleteResult = DeleteGameResult.Success;
         var controller = CreateController("petras");
 
-        var result = controller.Delete(game.Id);
+        var result = controller.Delete(1);
 
         Assert.IsType<NoContentResult>(result);
-        Assert.IsType<NotFoundResult>(controller.GetById(game.Id));
     }
 
     [Fact]
-    public void Delete_UserIsNotHost_ReturnsForbidAndGameStays()
+    public void Delete_ServiceReturnsNotHost_ReturnsForbid()
     {
-        var game = _service.AddGame(host: "petras");
+        _service.DeleteResult = DeleteGameResult.NotHost;
         var controller = CreateController("jonas");
 
-        var result = controller.Delete(game.Id);
+        var result = controller.Delete(1);
 
         Assert.IsType<ForbidResult>(result);
-        Assert.IsType<OkObjectResult>(controller.GetById(game.Id));
     }
 
     [Fact]
-    public void Delete_GameDoesNotExist_ReturnsNotFound()
+    public void Delete_ServiceReturnsNotFound_ReturnsNotFound()
     {
+        _service.DeleteResult = DeleteGameResult.NotFound;
         var controller = CreateController("petras");
 
-        var result = controller.Delete(999);
+        var result = controller.Delete(1);
 
         Assert.IsType<NotFoundResult>(result);
     }
