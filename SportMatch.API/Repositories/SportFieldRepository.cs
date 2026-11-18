@@ -16,7 +16,7 @@ public class SportFieldRepository : Repository<SportField>, ISportFieldRepositor
 
     private void SeedIfEmpty()
     {
-        if (_set.Any())
+        if (_dbContext.Set<SportField>().Any())
             return;
 
         try
@@ -30,7 +30,7 @@ public class SportFieldRepository : Repository<SportField>, ISportFieldRepositor
             if (fields is null || fields.Count == 0)
                 throw new SportFieldDataException("sportfields.json contains no sport fields.");
 
-            _set.AddRange(fields);
+            _dbContext.Set<SportField>().AddRange(fields);
             _dbContext.SaveChanges();
         }
         catch (FileNotFoundException ex)
@@ -45,7 +45,7 @@ public class SportFieldRepository : Repository<SportField>, ISportFieldRepositor
 
     public IReadOnlyList<SportField> Search(string? city = null, string? gameType = null, string? fieldType = null)
     {
-        var query = _set.AsQueryable();
+        var query = _dbContext.Set<SportField>().AsQueryable();
 
         if (!string.IsNullOrEmpty(city))
             query = query.Where(f => f.City.ToLower() == city.ToLower());
@@ -60,7 +60,7 @@ public class SportFieldRepository : Repository<SportField>, ISportFieldRepositor
     }
 
     public IEnumerator<SportField> GetEnumerator() =>
-        _set.AsEnumerable().GetEnumerator();
+        _dbContext.Set<SportField>().AsEnumerable().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

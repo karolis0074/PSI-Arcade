@@ -16,7 +16,7 @@ public class AccountRepository : Repository<Account>, IAccountRepository
 
     // username column is NOCASE, so this lookup is case-insensitive
     public Account? GetByUsername(string username) =>
-        _set.FirstOrDefault(a => a.Username == username);
+        _dbContext.Set<Account>().FirstOrDefault(a => a.Username == username);
 
     public RegisterResult TryAdd(Account account)
     {
@@ -25,7 +25,7 @@ public class AccountRepository : Repository<Account>, IAccountRepository
         if (GetByUsername(account.Username) is not null)
             return RegisterResult.UsernameTaken;
 
-        _set.Add(account);
+        _dbContext.Set<Account>().Add(account);
 
         try
         {
