@@ -2,12 +2,11 @@ using SportMatch.API.Data;
 
 namespace SportMatch.API.Models;
 
-public class Game
+public class Game : BaseEntity
 {
     // game is almost full when 80% of spots are taken
     private const double AlmostFullRatio = 0.8;
 
-    public int Id { get; set; }
     public int FootballFieldId { get; set; }
     public SportField? FootballField { get; set; }
     public string CreatedByUsername { get; set; } = string.Empty;
