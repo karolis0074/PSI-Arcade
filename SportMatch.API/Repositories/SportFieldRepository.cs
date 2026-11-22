@@ -3,10 +3,10 @@ using SportMatch.API.Models;
 using System.Collections;
 using System.Text.Json;
 using SportMatch.API.Exceptions;
+using Microsoft.EntityFrameworkCore;
 
 namespace SportMatch.API.Repositories;
 
-// GetAll and GetById are inherited from Repository<SportField>, only field-specific logic stays here
 public class SportFieldRepository : Repository<SportField>, ISportFieldRepository
 {
     public SportFieldRepository(AppDbContext dbContext) : base(dbContext)
@@ -42,6 +42,12 @@ public class SportFieldRepository : Repository<SportField>, ISportFieldRepositor
             throw new SportFieldDataException("sportfields.json is not valid JSON.", ex);
         }
     }
+
+    public async Task<IReadOnlyList<SportField>> GetAllAsync() => 
+        await _dbContext.SportFields.ToListAsync();
+
+    public async Task<SportField?> GetByIdAsync(int id) => 
+        await _dbContext.SportFields.FirstOrDefaultAsync(f => f.Id == id);
 
     public IReadOnlyList<SportField> Search(string? city = null, string? gameType = null, string? fieldType = null)
     {
