@@ -9,10 +9,12 @@ public class GameMembershipService : IGameMembershipService
 {
     // DI — GameRepository comes through the constructor
     private readonly IGameRepository _gameRepository;
+    private readonly IClock _clock;
 
-    public GameMembershipService(IGameRepository gameRepository)
+    public GameMembershipService(IGameRepository gameRepository, IClock clock)
     {
         _gameRepository = gameRepository;
+        _clock = clock;
     }
 
     public Game? GetGame(int gameId) => _gameRepository.GetById(gameId);
@@ -42,7 +44,7 @@ public class GameMembershipService : IGameMembershipService
             return MembershipResult.GameNotFound;
 
         // can't join a game that already started
-        if (game.StartTime <= DateTime.UtcNow)
+        if (game.StartTime <= _clock.UtcNow)
             return MembershipResult.GameStarted;
 
         // user can't join the same game twice
@@ -69,7 +71,7 @@ public class GameMembershipService : IGameMembershipService
             return MembershipResult.GameNotFound;
 
         // can't leave a game that already started
-        if (game.StartTime <= DateTime.UtcNow)
+        if (game.StartTime <= _clock.UtcNow)
             return MembershipResult.GameStarted;
 
         // user has to be in the game to leave it

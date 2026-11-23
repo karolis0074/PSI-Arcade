@@ -27,10 +27,6 @@ Authorization: Bearer {{login.response.body.$.token}}
   "maxPlayers": 10
 }
 
-### Delete the game you just created
-DELETE {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}
-Authorization: Bearer {{login.response.body.$.token}}
-
 ### Register second user (200, or 409 if it already exists)
 POST {{SportMatch_HostAddress}}/accounts
 Content-Type: application/json
@@ -47,6 +43,10 @@ Content-Type: application/json
 ### Delete as NOT the host (expect 403)
 DELETE {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}
 Authorization: Bearer {{loginOther.response.body.$.token}}
+
+### Delete the game as the host (expect 204)
+DELETE {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}
+Authorization: Bearer {{login.response.body.$.token}}
 
 ### TEST: create without token (expect 401)
 POST {{SportMatch_HostAddress}}/games

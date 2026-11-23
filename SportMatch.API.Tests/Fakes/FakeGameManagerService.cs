@@ -18,13 +18,6 @@ public class FakeGameManagerService : IGameManagerService
     // the result Delete returns
     public DeleteGameResult DeleteResult { get; set; } = DeleteGameResult.Success;
 
-    public Game AddGame(string host)
-    {
-        var game = new Game { Id = _nextId++, CreatedByUsername = host };
-        _games.Add(game);
-        return game;
-    }
-
     public IReadOnlyList<Game> GetAll() => _games;
 
     public Game? GetById(int id) => _games.FirstOrDefault(g => g.Id == id);
