@@ -14,11 +14,11 @@ namespace SportMatch.API.Controllers;
 public class GamesController : ControllerBase
 {
     private string GetUsername() => User.Identity!.Name!;
-    private readonly GameRepository _gameRepository;
+    private readonly IGameRepository _gameRepository;
     private readonly AppDbContext _dbContext;
     private readonly IGameManagerService _gameManagerService;
 
-    public GamesController(GameRepository gameRepository, AppDbContext dbContext, IGameManagerService gameManagerService)
+    public GamesController(IGameRepository gameRepository, AppDbContext dbContext, IGameManagerService gameManagerService)
     {
         _gameRepository = gameRepository;
         _dbContext = dbContext;
