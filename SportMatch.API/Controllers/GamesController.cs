@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SportMatch.API.DataTransferObjects.Requests;
+using SportMatch.API.Repositories;
 using SportMatch.API.Results;
 using SportMatch.API.Services;
 
@@ -10,10 +11,12 @@ namespace SportMatch.API.Controllers;
 [Route("games")]
 public class GamesController : ControllerBase
 {
+    private readonly IGameRepository _gameRepository;
     private readonly IGameManagerService _gameManagerService;
 
-    public GamesController(IGameManagerService gameManagerService)
+    public GamesController(IGameRepository gameRepository, IGameManagerService gameManagerService)
     {
+        _gameRepository = gameRepository;
         _gameManagerService = gameManagerService;
     }
 
@@ -21,13 +24,16 @@ public class GamesController : ControllerBase
 
     // GET /games
     [HttpGet]
-    public IActionResult GetAll() => Ok(_gameManagerService.GetAll());
+    public async Task<IActionResult> GetAll()
+    {
+        return Ok(await _gameRepository.GetAllAsync());
+    }
 
     // GET /games/1
     [HttpGet("{id}")]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(int id)
     {
-        var game = _gameManagerService.GetById(id);
+        var game = await _gameRepository.GetByIdAsync(id);
 
         if (game is null)
             return NotFound();
@@ -36,6 +42,7 @@ public class GamesController : ControllerBase
     }
 
     // POST /games
+    // all the rules (start time, field exists, field capacity) live in GameManagerService
     [Authorize]
     [HttpPost]
     public IActionResult Create(CreateGameRequest request)

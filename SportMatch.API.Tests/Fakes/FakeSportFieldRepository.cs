@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq.Expressions;
 using SportMatch.API.Models;
 using SportMatch.API.Repositories;
 
@@ -15,14 +16,21 @@ public class FakeSportFieldRepository : ISportFieldRepository
         return entity;
     }
 
-    public SportField? GetById<TKey>(TKey id) where TKey : notnull =>
-        id is int intId ? Fields.FirstOrDefault(f => f.Id == intId) : null;
+    public SportField? GetById(int id) => Fields.FirstOrDefault(f => f.Id == id);
 
     public IReadOnlyList<SportField> GetAll() => Fields;
 
+    public IReadOnlyList<SportField> GetAllOrderedBy<TKey>(Expression<Func<SportField, TKey>> keySelector)
+        where TKey : IComparable =>
+        Fields.AsQueryable().OrderBy(keySelector).ToList();
+
+    public Task<IReadOnlyList<SportField>> GetAllAsync() => Task.FromResult<IReadOnlyList<SportField>>(Fields);
+
+    public Task<SportField?> GetByIdAsync(int id) => Task.FromResult(GetById(id));
+
     public void Update(SportField entity) { }
 
-    public bool Delete<TKey>(TKey id) where TKey : notnull
+    public bool Delete(int id)
     {
         var field = GetById(id);
         return field is not null && Fields.Remove(field);

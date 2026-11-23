@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using SportMatch.API.Models;
 using SportMatch.API.Repositories;
 
@@ -20,14 +21,17 @@ public class FakeGameRepository : IGameRepository
         return entity;
     }
 
-    public Game? GetById<TKey>(TKey id) where TKey : notnull =>
-        id is int intId ? _games.FirstOrDefault(g => g.Id == intId) : null;
+    public Game? GetById(int id) => _games.FirstOrDefault(g => g.Id == id);
 
     public IReadOnlyList<Game> GetAll() => _games;
 
+    public IReadOnlyList<Game> GetAllOrderedBy<TKey>(Expression<Func<Game, TKey>> keySelector)
+        where TKey : IComparable =>
+        _games.AsQueryable().OrderBy(keySelector).ToList();
+
     public void Update(Game entity) { }
 
-    public bool Delete<TKey>(TKey id) where TKey : notnull
+    public bool Delete(int id)
     {
         if (DeleteShouldFail)
             return false;
@@ -35,4 +39,10 @@ public class FakeGameRepository : IGameRepository
         var game = GetById(id);
         return game is not null && _games.Remove(game);
     }
+
+    public Task<List<Game>> GetAllAsync() => Task.FromResult(_games.ToList());
+
+    public Task<Game?> GetByIdAsync(int id) => Task.FromResult(GetById(id));
+
+    public Task<Game> AddAsync(Game game) => Task.FromResult(Add(game));
 }

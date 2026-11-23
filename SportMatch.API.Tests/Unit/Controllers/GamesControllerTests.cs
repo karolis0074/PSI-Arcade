@@ -4,14 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 using SportMatch.API.Controllers;
 using SportMatch.API.DataTransferObjects.Requests;
 using SportMatch.API.Models;
+using SportMatch.API.Results;
 using SportMatch.API.Tests.Fakes;
 
 namespace SportMatch.API.Tests.Unit.Controllers;
 
-// Unit tests: GamesController gets a FAKE IGameManagerService, not the real one,
+// Unit tests: GamesController gets a FAKE repository and a FAKE IGameManagerService,
 // and every result is checked through the HTTP responses the controller returns.
+// The business rules themselves (time, field, capacity) are tested in GameManagerServiceTests.
 public class GamesControllerTests
 {
+    private readonly FakeGameRepository _gameRepository = new();
     private readonly FakeGameManagerService _service = new();
 
     // makes a controller with a logged-in user, so User.Identity.Name works
@@ -19,7 +22,7 @@ public class GamesControllerTests
     {
         var identity = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }, "TestAuth");
 
-        return new GamesController(_service)
+        return new GamesController(_gameRepository, _service)
         {
             ControllerContext = new ControllerContext
             {
@@ -28,18 +31,22 @@ public class GamesControllerTests
         };
     }
 
-    private static CreateGameRequest ValidRequest() => new(1, DateTime.UtcNow.AddDays(1), 4);
+    // fixed date: the fake service does not check time, so the test never depends on the clock
+    private static CreateGameRequest ValidRequest() => new(1, new DateTime(2026, 1, 2, 12, 0, 0, DateTimeKind.Utc), 4);
+
+    // puts a game straight into the fake repository
+    private Game AddGame(string host) => _gameRepository.Add(new Game { CreatedByUsername = host });
 
     // ---------- GET ----------
 
     [Fact]
-    public void GetAll_TwoGamesExist_ReturnsOkWithBothGames()
+    public async Task GetAll_TwoGamesExist_ReturnsOkWithBothGames()
     {
-        _service.AddGame(host: "host");
-        _service.AddGame(host: "host");
+        AddGame(host: "host");
+        AddGame(host: "host");
         var controller = CreateController("jonas");
 
-        var result = controller.GetAll();
+        var result = await controller.GetAll();
 
         var ok = Assert.IsType<OkObjectResult>(result);
         var games = Assert.IsAssignableFrom<IReadOnlyList<Game>>(ok.Value);
@@ -47,23 +54,24 @@ public class GamesControllerTests
     }
 
     [Fact]
-    public void GetById_GameExists_ReturnsOkWithGame()
+    public async Task GetById_GameExists_ReturnsOkWithGame()
     {
-        var game = _service.AddGame(host: "host");
+        var game = AddGame(host: "host");
         var controller = CreateController("jonas");
 
-        var result = controller.GetById(game.Id);
+        var result = await controller.GetById(game.Id);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         Assert.Equal(game.Id, Assert.IsType<Game>(ok.Value).Id);
     }
 
     [Fact]
-    public void GetById_GameDoesNotExist_ReturnsNotFound()
+    public async Task GetById_GameDoesNotExist_ReturnsNotFound()
     {
+        const int missingId = 999;
         var controller = CreateController("jonas");
 
-        var result = controller.GetById(999);
+        var result = await controller.GetById(missingId);
 
         Assert.IsType<NotFoundResult>(result);
     }
@@ -89,47 +97,46 @@ public class GamesControllerTests
     [Fact]
     public void Create_ServiceReturnsError_ReturnsBadRequestWithMessage()
     {
-        _service.CreateError = "Sport field not found";
+        _service.CreateError = "MaxPlayers cannot exceed the field capacity (22)";
         var controller = CreateController("petras");
 
         var result = controller.Create(ValidRequest());
 
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Sport field not found", badRequest.Value);
+        Assert.Equal("MaxPlayers cannot exceed the field capacity (22)", badRequest.Value);
     }
 
     // ---------- DELETE ----------
 
     [Fact]
-    public void Delete_UserIsHost_ReturnsNoContentAndGameIsGone()
+    public void Delete_ServiceReturnsSuccess_ReturnsNoContent()
     {
-        var game = _service.AddGame(host: "petras");
+        _service.DeleteResult = DeleteGameResult.Success;
         var controller = CreateController("petras");
 
-        var result = controller.Delete(game.Id);
+        var result = controller.Delete(1);
 
         Assert.IsType<NoContentResult>(result);
-        Assert.IsType<NotFoundResult>(controller.GetById(game.Id));
     }
 
     [Fact]
-    public void Delete_UserIsNotHost_ReturnsForbidAndGameStays()
+    public void Delete_ServiceReturnsNotHost_ReturnsForbid()
     {
-        var game = _service.AddGame(host: "petras");
+        _service.DeleteResult = DeleteGameResult.NotHost;
         var controller = CreateController("jonas");
 
-        var result = controller.Delete(game.Id);
+        var result = controller.Delete(1);
 
         Assert.IsType<ForbidResult>(result);
-        Assert.IsType<OkObjectResult>(controller.GetById(game.Id));
     }
 
     [Fact]
-    public void Delete_GameDoesNotExist_ReturnsNotFound()
+    public void Delete_ServiceReturnsNotFound_ReturnsNotFound()
     {
+        _service.DeleteResult = DeleteGameResult.NotFound;
         var controller = CreateController("petras");
 
-        var result = controller.Delete(999);
+        var result = controller.Delete(1);
 
         Assert.IsType<NotFoundResult>(result);
     }
