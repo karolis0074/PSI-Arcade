@@ -14,7 +14,6 @@ public class MetricsController : ControllerBase
         _metrics = metrics;
     }
 
-    // GET /metrics/active-users
     [HttpGet("active-users")]
     public IActionResult GetActiveUsers()
     {

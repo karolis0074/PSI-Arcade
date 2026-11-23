@@ -24,7 +24,6 @@ public class AccountsController : ControllerBase
 
     private string GetUsername() => User.Identity!.Name!;
 
-    // POST /accounts
     [HttpPost]
     public IActionResult Register(RegisterRequest request)
     {
@@ -46,7 +45,6 @@ public class AccountsController : ControllerBase
         }
     }
 
-    // POST /accounts/login
     [HttpPost("login")]
     public IActionResult Login(LoginRequest request)
     {
@@ -54,20 +52,19 @@ public class AccountsController : ControllerBase
         if (token is null)
             return Unauthorized();
 
-        _metrics.UserConnected(request.Username); // Padidiname skaičių prisijungus
+        _metrics.UserConnected(request.Username);
 
         return Ok(new { token });
     }
 
-    // POST /accounts/logout
+    [Authorize]
     [HttpPost("logout")]
-    public IActionResult Logout([FromQuery] string username)
+    public IActionResult Logout()
     {
-        _metrics.UserDisconnected(username); // Sumažiname skaičių atsijungus
+        _metrics.UserDisconnected(GetUsername());
         return Ok(new { message = "Sėkmingai atsijungta" });
     }
 
-    // PUT /accounts/me/password
     [Authorize]
     [HttpPut("me/password")]
     public IActionResult ChangePassword(ChangePasswordRequest request)
@@ -87,7 +84,6 @@ public class AccountsController : ControllerBase
         };
     }
 
-    // DELETE /accounts/me
     [Authorize]
     [HttpDelete("me")]
     public IActionResult DeleteAccount()
