@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SportMatch.API", "SportMatc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SportMatch.API.Tests", "SportMatch.API.Tests\SportMatch.API.Tests.csproj", "{6ED4D0AC-47C2-4C46-9A48-757C2BAC1CBD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SportMatch.API.IntegrationTests", "SportMatch.API.IntegrationTests\SportMatch.API.IntegrationTests.csproj", "{1DB74480-C966-4D92-8DD8-DDFF465DF2DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{6ED4D0AC-47C2-4C46-9A48-757C2BAC1CBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6ED4D0AC-47C2-4C46-9A48-757C2BAC1CBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6ED4D0AC-47C2-4C46-9A48-757C2BAC1CBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DB74480-C966-4D92-8DD8-DDFF465DF2DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DB74480-C966-4D92-8DD8-DDFF465DF2DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DB74480-C966-4D92-8DD8-DDFF465DF2DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DB74480-C966-4D92-8DD8-DDFF465DF2DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

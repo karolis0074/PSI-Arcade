@@ -80,3 +80,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// lets integration tests start the API with WebApplicationFactory<Program>
+public partial class Program { }
