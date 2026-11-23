@@ -7,13 +7,14 @@ namespace SportMatch.API.Controllers;
 [Route("metrics")]
 public class MetricsController : ControllerBase
 {
-    private readonly LiveMetricsService _metrics;
+    private readonly ILiveMetricsService _metrics;
 
-    public MetricsController(LiveMetricsService metrics)
+    public MetricsController(ILiveMetricsService metrics)
     {
         _metrics = metrics;
     }
 
+    // GET /metrics/active-users
     [HttpGet("active-users")]
     public IActionResult GetActiveUsers()
     {

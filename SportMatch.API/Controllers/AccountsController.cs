@@ -13,9 +13,9 @@ public class AccountsController : ControllerBase
 {
     private readonly IAccountService _accountService;
     private readonly IAuthService _authService;
-    private readonly LiveMetricsService _metrics; 
+    private readonly ILiveMetricsService _metrics;
 
-    public AccountsController(IAccountService accountService, IAuthService authService, LiveMetricsService metrics)
+    public AccountsController(IAccountService accountService, IAuthService authService, ILiveMetricsService metrics)
     {
         _accountService = accountService;
         _authService = authService;
@@ -30,10 +30,7 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var result = _accountService.Register(
-                request.Username,
-                request.Password
-            );
+            var result = _accountService.Register(request.Username, request.Password);
 
             return result switch
             {
@@ -45,7 +42,7 @@ public class AccountsController : ControllerBase
         }
         catch (InvalidAccountException ex)
         {
-            return BadRequest(ex.Message); // tells the client what was wrong
+            return BadRequest(ex.Message);
         }
     }
 
@@ -57,16 +54,16 @@ public class AccountsController : ControllerBase
         if (token is null)
             return Unauthorized();
 
-        _metrics.UserConnected(); // Padidiname aktyvių vartotojų skaičių
+        _metrics.UserConnected(request.Username); // Padidiname skaičių prisijungus
 
-        return Ok(new { token }); // returns jwt token
+        return Ok(new { token });
     }
 
     // POST /accounts/logout
     [HttpPost("logout")]
-    public IActionResult Logout()
+    public IActionResult Logout([FromQuery] string username)
     {
-        _metrics.UserDisconnected(); //Sumažiname aktyvių vartotojų skaičių
+        _metrics.UserDisconnected(username); // Sumažiname skaičių atsijungus
         return Ok(new { message = "Sėkmingai atsijungta" });
     }
 

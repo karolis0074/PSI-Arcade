@@ -45,7 +45,7 @@ builder.Services.AddScoped<IGameStatisticsService, GameStatisticsService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<ICryptService, CryptService>();
-builder.Services.AddSingleton<LiveMetricsService>();
+builder.Services.AddSingleton<ILiveMetricsService, LiveMetricsService>();
 
 // dependencies of CryptService, injected instead of created with new
 builder.Services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
