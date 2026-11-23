@@ -1,45 +1,53 @@
-﻿using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using SportMatch.API.Data;
+using SportMatch.API.Models;
 
 namespace SportMatch.API.Repositories;
 
-// generic repository: the shared CRUD code is written once and works for any entity type T
-public class Repository<T> : IRepository<T> where T : class
+// generic repository: the shared CRUD code is written once and works for every entity type T.
+// T must derive from BaseEntity, so only our models (Game, SportField, Account) can be used here.
+public class Repository<T> : IRepository<T> where T : BaseEntity
 {
     protected readonly AppDbContext _dbContext;
-    protected readonly DbSet<T> _set;
 
     public Repository(AppDbContext dbContext)
     {
         _dbContext = dbContext;
-        _set = dbContext.Set<T>(); // the table for T, like Games or SportFields
     }
 
     public T Add(T entity)
     {
-        _set.Add(entity);
+        _dbContext.Set<T>().Add(entity);
         _dbContext.SaveChanges();
         return entity;
     }
 
-    // generic method: works with int ids (Game, SportField) and string ids (Account)
-    public T? GetById<TKey>(TKey id) where TKey : notnull => _set.Find(id);
+    // every BaseEntity has an int Id, so the key type is known
+    public T? GetById(int id) => _dbContext.Set<T>().Find(id);
 
-    public IReadOnlyList<T> GetAll() => _set.ToList();
+    public IReadOnlyList<T> GetAll() => _dbContext.Set<T>().ToList();
+
+    // generic method: TKey is the type of the property we sort by (DateTime, string, int, enum...),
+    // the compiler infers it from the lambda, e.g. GetAllOrderedBy(g => g.StartTime).
+    // TKey must be IComparable, so unsortable things like lists or whole objects don't compile.
+    public IReadOnlyList<T> GetAllOrderedBy<TKey>(Expression<Func<T, TKey>> keySelector)
+        where TKey : IComparable =>
+        _dbContext.Set<T>().OrderBy(keySelector).ToList();
 
     public void Update(T entity)
     {
-        _set.Update(entity);
+        _dbContext.Set<T>().Update(entity);
         _dbContext.SaveChanges();
     }
 
-    public bool Delete<TKey>(TKey id) where TKey : notnull
+    public bool Delete(int id)
     {
         var entity = GetById(id);
         if (entity is null)
             return false;
 
-        _set.Remove(entity);
+        _dbContext.Set<T>().Remove(entity);
         _dbContext.SaveChanges();
         return true;
     }

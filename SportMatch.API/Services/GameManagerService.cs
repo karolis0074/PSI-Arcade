@@ -18,7 +18,8 @@ public class GameManagerService :IGameManagerService
         _clock = clock;
     }
 
-    public IReadOnlyList<Game> GetAll() => _gameRepository.GetAll();
+    // games come back sorted by start time (TKey = DateTime)
+    public IReadOnlyList<Game> GetAll() => _gameRepository.GetAllOrderedBy(g => g.StartTime);
 
     public Game? GetById(int id) => _gameRepository.GetById(id);
 
