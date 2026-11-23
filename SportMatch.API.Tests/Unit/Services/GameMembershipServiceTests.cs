@@ -6,17 +6,18 @@ using SportMatch.API.Tests.Fakes;
 
 namespace SportMatch.API.Tests.Unit.Services;
 
-// unit tests: GameMembershipService gets a fake repository, so no database is used
+// unit tests: GameMembershipService gets a fake repository and a fake clock, so no database or real time is used
 public class GameMembershipServiceTests
 {
     private const int MissingGameId = 999;
 
     private readonly FakeGameRepository _gameRepository = new();
+    private readonly FakeClock _clock = new();
     private readonly GameMembershipService _service;
 
     public GameMembershipServiceTests()
     {
-        _service = new GameMembershipService(_gameRepository);
+        _service = new GameMembershipService(_gameRepository, _clock);
     }
 
     // adds a game that starts tomorrow, the host is already joined like in a created game
@@ -26,7 +27,7 @@ public class GameMembershipServiceTests
         {
             FootballFieldId = 1,
             CreatedByUsername = "host",
-            StartTime = DateTime.UtcNow.AddDays(1),
+            StartTime = _clock.UtcNow.AddDays(1),
             MaxPlayers = maxPlayers
         };
         game.JoinedUsernames.Add("host");
@@ -52,7 +53,7 @@ public class GameMembershipServiceTests
     {
         // arrange
         var game = AddGame(maxPlayers: 4);
-        game.StartTime = DateTime.UtcNow.AddHours(-1);
+        game.StartTime = _clock.UtcNow.AddHours(-1);
 
         // act
         var result = _service.Join(game.Id, "jonas");
@@ -124,7 +125,7 @@ public class GameMembershipServiceTests
         // arrange
         var game = AddGame(maxPlayers: 4);
         _service.Join(game.Id, "jonas");
-        game.StartTime = DateTime.UtcNow.AddHours(-1);
+        game.StartTime = _clock.UtcNow.AddHours(-1);
 
         // act
         var result = _service.Leave(game.Id, "jonas");
