@@ -20,6 +20,10 @@ public class FakeSportFieldRepository : ISportFieldRepository
 
     public IReadOnlyList<SportField> GetAll() => Fields;
 
+    public Task<IReadOnlyList<SportField>> GetAllAsync() => Task.FromResult<IReadOnlyList<SportField>>(Fields);
+
+    public Task<SportField?> GetByIdAsync(int id) => Task.FromResult(Fields.FirstOrDefault(f => f.Id == id));
+
     public void Update(SportField entity) { }
 
     public bool Delete<TKey>(TKey id) where TKey : notnull

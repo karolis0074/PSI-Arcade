@@ -2,17 +2,22 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SportMatch.API.Controllers;
+using SportMatch.API.Data;
 using SportMatch.API.DataTransferObjects.Requests;
 using SportMatch.API.Models;
-using SportMatch.API.Results;
+using SportMatch.API.Repositories;
 using SportMatch.API.Tests.Fakes;
 
 namespace SportMatch.API.Tests.Unit.Controllers;
 
-// Unit tests: GamesController gets a FAKE IGameManagerService, not the real one,
-// and every result is checked through the HTTP responses the controller returns.
+// GamesController reads and writes games through GameRepository (a real one on an
+// in-memory SQLite database) and only asks IGameManagerService (a FAKE) who the host is.
+// Every result is checked through the HTTP responses the controller returns.
 public class GamesControllerTests
 {
+    private const int ExistingFieldId = 1; // TestDatabase always adds field 1
+
+    private readonly AppDbContext _db = TestDatabase.Create();
     private readonly FakeGameManagerService _service = new();
 
     // makes a controller with a logged-in user, so User.Identity.Name works
@@ -20,7 +25,7 @@ public class GamesControllerTests
     {
         var identity = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }, "TestAuth");
 
-        return new GamesController(_service)
+        return new GamesController(new GameRepository(_db), _db, _service)
         {
             ControllerContext = new ControllerContext
             {
@@ -29,19 +34,34 @@ public class GamesControllerTests
         };
     }
 
-    // fixed date: the fake service does not check time, so the test never depends on the clock
-    private static CreateGameRequest ValidRequest() => new(1, new DateTime(2026, 1, 2, 12, 0, 0, DateTimeKind.Utc), 4);
+    // puts a game straight into the test database
+    private Game AddGame(string host)
+    {
+        var game = new Game
+        {
+            FootballFieldId = ExistingFieldId,
+            CreatedByUsername = host,
+            StartTime = DateTime.UtcNow.AddDays(1),
+            MaxPlayers = 10
+        };
+        _db.Games.Add(game);
+        _db.SaveChanges();
+        return game;
+    }
+
+    // the controller rejects games in the past, so the start time is always tomorrow
+    private static CreateGameRequest ValidRequest() => new(ExistingFieldId, DateTime.UtcNow.AddDays(1), 4);
 
     // ---------- GET ----------
 
     [Fact]
-    public void GetAll_TwoGamesExist_ReturnsOkWithBothGames()
+    public async Task GetAll_TwoGamesExist_ReturnsOkWithBothGames()
     {
-        _service.AddGame(host: "host");
-        _service.AddGame(host: "host");
+        AddGame(host: "host");
+        AddGame(host: "host");
         var controller = CreateController("jonas");
 
-        var result = controller.GetAll();
+        var result = await controller.GetAll();
 
         var ok = Assert.IsType<OkObjectResult>(result);
         var games = Assert.IsAssignableFrom<IReadOnlyList<Game>>(ok.Value);
@@ -49,24 +69,24 @@ public class GamesControllerTests
     }
 
     [Fact]
-    public void GetById_GameExists_ReturnsOkWithGame()
+    public async Task GetById_GameExists_ReturnsOkWithGame()
     {
-        var game = _service.AddGame(host: "host");
+        var game = AddGame(host: "host");
         var controller = CreateController("jonas");
 
-        var result = controller.GetById(game.Id);
+        var result = await controller.GetById(game.Id);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         Assert.Equal(game.Id, Assert.IsType<Game>(ok.Value).Id);
     }
 
     [Fact]
-    public void GetById_GameDoesNotExist_ReturnsNotFound()
+    public async Task GetById_GameDoesNotExist_ReturnsNotFound()
     {
         const int missingId = 999;
         var controller = CreateController("jonas");
 
-        var result = controller.GetById(missingId);
+        var result = await controller.GetById(missingId);
 
         Assert.IsType<NotFoundResult>(result);
     }
@@ -74,12 +94,12 @@ public class GamesControllerTests
     // ---------- POST ----------
 
     [Fact]
-    public void Create_ValidRequest_ReturnsCreatedGameHostedByLoggedInUser()
+    public async Task Create_ValidRequest_ReturnsCreatedGameHostedByLoggedInUser()
     {
         var controller = CreateController("petras");
         var request = ValidRequest();
 
-        var result = controller.Create(request);
+        var result = await controller.Create(request);
 
         var created = Assert.IsType<CreatedAtActionResult>(result);
         var game = Assert.IsType<Game>(created.Value);
@@ -87,51 +107,78 @@ public class GamesControllerTests
         Assert.Equal(game.Id, created.RouteValues!["id"]);
         Assert.Equal("petras", game.CreatedByUsername);
         Assert.Equal(request.FootballFieldId, game.FootballFieldId);
+        Assert.Single(_db.Games);
     }
 
     [Fact]
-    public void Create_ServiceReturnsError_ReturnsBadRequestWithMessage()
+    public async Task Create_FieldDoesNotExist_ReturnsBadRequestWithMessage()
     {
-        _service.CreateError = "Sport field not found";
         var controller = CreateController("petras");
+        var request = ValidRequest() with { FootballFieldId = 999 };
 
-        var result = controller.Create(ValidRequest());
+        var result = await controller.Create(request);
 
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal("Sport field not found", badRequest.Value);
+        Assert.Equal("Football field not found", badRequest.Value);
+        Assert.Empty(_db.Games);
+    }
+
+    [Fact]
+    public async Task Create_StartTimeInPast_ReturnsBadRequest()
+    {
+        var controller = CreateController("petras");
+        var request = ValidRequest() with { StartTime = DateTime.UtcNow.AddDays(-1) };
+
+        var result = await controller.Create(request);
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal("StartTime must be in the future", badRequest.Value);
+    }
+
+    [Fact]
+    public async Task Create_MaxPlayersZero_ReturnsBadRequest()
+    {
+        var controller = CreateController("petras");
+        var request = ValidRequest() with { MaxPlayers = 0 };
+
+        var result = await controller.Create(request);
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal("MaxPlayers must be greater than 0", badRequest.Value);
     }
 
     // ---------- DELETE ----------
 
     [Fact]
-    public void Delete_ServiceReturnsSuccess_ReturnsNoContent()
+    public async Task Delete_HostDeletesOwnGame_ReturnsNoContent()
     {
-        _service.DeleteResult = DeleteGameResult.Success;
+        var game = AddGame(host: "petras");
         var controller = CreateController("petras");
 
-        var result = controller.Delete(1);
+        var result = await controller.Delete(game.Id);
 
         Assert.IsType<NoContentResult>(result);
+        Assert.Empty(_db.Games);
     }
 
     [Fact]
-    public void Delete_ServiceReturnsNotHost_ReturnsForbid()
+    public async Task Delete_NotHost_ReturnsUnauthorized()
     {
-        _service.DeleteResult = DeleteGameResult.NotHost;
+        var game = AddGame(host: "petras");
         var controller = CreateController("jonas");
 
-        var result = controller.Delete(1);
+        var result = await controller.Delete(game.Id);
 
-        Assert.IsType<ForbidResult>(result);
+        Assert.IsType<UnauthorizedResult>(result);
+        Assert.Single(_db.Games);
     }
 
     [Fact]
-    public void Delete_ServiceReturnsNotFound_ReturnsNotFound()
+    public async Task Delete_GameDoesNotExist_ReturnsNotFound()
     {
-        _service.DeleteResult = DeleteGameResult.NotFound;
         var controller = CreateController("petras");
 
-        var result = controller.Delete(1);
+        var result = await controller.Delete(999);
 
         Assert.IsType<NotFoundResult>(result);
     }
