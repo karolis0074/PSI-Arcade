@@ -46,6 +46,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<ICryptService, CryptService>();
 builder.Services.AddSingleton<ILiveMetricsService, LiveMetricsService>();
+builder.Services.AddSingleton<IClock, SystemClock>();
 
 // Dependencies
 builder.Services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
