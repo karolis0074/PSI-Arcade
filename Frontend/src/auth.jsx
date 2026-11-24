@@ -91,6 +91,7 @@ export function AuthProvider({ children }) {
   );
 
   const logout = useCallback(() => {
+    accounts.logout().catch(() => {});
     save(null);
     navigate('/games');
   }, [save]);

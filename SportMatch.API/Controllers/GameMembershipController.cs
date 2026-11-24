@@ -49,6 +49,22 @@ public class GameMembershipController : ControllerBase
         };
     }
 
+    // DELETE /games/1/players/jonas
+    [Authorize]
+    [HttpDelete("{id}/players/{username}")]
+    public IActionResult Kick(int id, string username)
+    {
+        var result = _membershipService.Kick(id, GetUsername(), username);
+
+        return result switch
+        {
+            MembershipResult.Success => Ok(_membershipService.GetGame(id)),
+            MembershipResult.GameNotFound => NotFound(result.ToMessage()),
+            MembershipResult.NotHost => Forbid(),   // 403
+            _ => BadRequest(result.ToMessage())
+        };
+    }
+
     // GET /games/1/spots
     [HttpGet("{id}/spots")]
     public IActionResult GetSpots(int id)

@@ -228,6 +228,10 @@ h1, h2, h3, p { margin: 0; }
   cursor: pointer;
   font-size: inherit;
 }
+.link:disabled { opacity: 0.5; cursor: default; }
+.link-danger { color: var(--danger); }
+.row-actions { display: flex; gap: 16px; }
+.location-note { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 16px; }
 
 .segmented {
   display: inline-flex;
@@ -607,6 +611,23 @@ input[type='date'].input, input[type='time'].input { font-variant-numeric: tabul
 .stat + .stat { border-left: 1px solid var(--hairline); }
 .stat-value { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .stat-label { font-size: 13px; color: var(--secondary); }
+
+.stats-overview { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 28px; }
+.stats-overview .stat { min-width: 0; }
+.stat-text {
+  font-size: 17px;
+  line-height: 35px;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--bar-green); margin-right: 8px; vertical-align: middle; }
+@media (max-width: 720px) {
+  .stats-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats-overview .stat:nth-child(3) { border-left: none; }
+  .stats-overview .stat:nth-child(n + 3) { border-top: 1px solid var(--hairline); }
+}
 
 .auth-page { display: flex; justify-content: center; padding-top: 24px; }
 .auth-card {

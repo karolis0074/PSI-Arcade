@@ -41,6 +41,7 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IGameMembershipService, GameMembershipService>();
 builder.Services.AddScoped<IGameManagerService, GameManagerService>();
 builder.Services.AddScoped<IGameStatisticsService, GameStatisticsService>();
+builder.Services.AddScoped<IGameRecommendationService, GameRecommendationService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<ICryptService, CryptService>();

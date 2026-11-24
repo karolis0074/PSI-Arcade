@@ -9,14 +9,14 @@ namespace SportMatch.API.Tests.Fakes;
 // it just returns what the test sets and remembers what the controller sent
 public class FakeGameMembershipService : IGameMembershipService
 {
-    // what Join and Leave return
+    // what Join, Leave and Kick return
     public MembershipResult Result { get; set; } = MembershipResult.Success;
 
     // what GetGame and GetSpots return
     public Game? Game { get; set; }
     public GameSpots? Spots { get; set; }
 
-    // what the controller passed to Join or Leave
+    // what the controller passed to Join, Leave or Kick
     public int LastGameId { get; private set; }
     public string? LastUsername { get; private set; }
 
@@ -45,6 +45,13 @@ public class FakeGameMembershipService : IGameMembershipService
     }
 
     public MembershipResult Leave(int gameId, string username)
+    {
+        LastGameId = gameId;
+        LastUsername = username;
+        return Result;
+    }
+
+    public MembershipResult Kick(int gameId, string hostUsername, string username)
     {
         LastGameId = gameId;
         LastUsername = username;

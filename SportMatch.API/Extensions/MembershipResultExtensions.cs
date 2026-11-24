@@ -4,7 +4,7 @@ namespace SportMatch.API.Extensions;
 
 public static class MembershipResultExtensions
 {
-    // text that is sent back when join or leave fails
+    // text that is sent back when join, leave or kick fails
     public static string ToMessage(this MembershipResult result)
     {
         if (result == MembershipResult.GameNotFound)
@@ -24,6 +24,12 @@ public static class MembershipResultExtensions
 
         if (result == MembershipResult.HostCannotLeave)
             return "Host cannot leave the game";
+
+        if (result == MembershipResult.NotHost)
+            return "Only the host can kick players";
+
+        if (result == MembershipResult.CannotKickHost)
+            return "Host cannot be kicked";
 
         return "Success";
     }

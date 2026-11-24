@@ -179,6 +179,91 @@ public class GameMembershipServiceTests
         Assert.Equal(GameStatus.Open, savedGame.Status);
     }
 
+    // ---------- Kick ----------
+
+    [Fact]
+    public void Kick_HostKicksPlayer_ReturnsSuccess()
+    {
+        // arrange
+        var game = AddGame(maxPlayers: 4);
+        _service.Join(game.Id, "jonas");
+
+        // act
+        var result = _service.Kick(game.Id, "host", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.Success, result);
+        Assert.DoesNotContain("jonas", _service.GetGame(game.Id)!.JoinedUsernames);
+    }
+
+    [Fact]
+    public void Kick_GameDoesNotExist_ReturnsGameNotFound()
+    {
+        // act
+        var result = _service.Kick(MissingGameId, "host", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.GameNotFound, result);
+    }
+
+    [Fact]
+    public void Kick_NotHost_ReturnsNotHost()
+    {
+        // arrange
+        var game = AddGame(maxPlayers: 4);
+        _service.Join(game.Id, "jonas");
+        _service.Join(game.Id, "petras");
+
+        // act
+        var result = _service.Kick(game.Id, "petras", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.NotHost, result);
+        Assert.Contains("jonas", _service.GetGame(game.Id)!.JoinedUsernames);
+    }
+
+    [Fact]
+    public void Kick_GameAlreadyStarted_ReturnsGameStarted()
+    {
+        // arrange
+        var game = AddGame(maxPlayers: 4);
+        _service.Join(game.Id, "jonas");
+        game.StartTime = _clock.UtcNow.AddHours(-1);
+
+        // act
+        var result = _service.Kick(game.Id, "host", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.GameStarted, result);
+        Assert.Contains("jonas", _service.GetGame(game.Id)!.JoinedUsernames);
+    }
+
+    [Fact]
+    public void Kick_HostKicksHimself_ReturnsCannotKickHost()
+    {
+        // arrange
+        var game = AddGame(maxPlayers: 4);
+
+        // act
+        var result = _service.Kick(game.Id, "host", "host");
+
+        // assert
+        Assert.Equal(MembershipResult.CannotKickHost, result);
+    }
+
+    [Fact]
+    public void Kick_UserNotInGame_ReturnsNotJoined()
+    {
+        // arrange
+        var game = AddGame(maxPlayers: 4);
+
+        // act
+        var result = _service.Kick(game.Id, "host", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.NotJoined, result);
+    }
+
     // ---------- GetSpots ----------
 
     [Fact]
