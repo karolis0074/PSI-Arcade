@@ -90,3 +90,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 await app.RunAsync();
+
+// lets integration tests start the API with WebApplicationFactory<Program>
+public partial class Program { }
