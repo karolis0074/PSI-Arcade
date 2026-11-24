@@ -25,7 +25,7 @@ public class GameFlowTests
     }
 
     [Fact]
-    public async Task JoinAndLeaveGame_SecondPlayer_UpdatesSpotsAndStatistics()
+    public async Task GameAndAccountFlow_SecondPlayer_WorksEndToEnd()
     {
         // arrange
         await using var factory = new SportMatchFactory();
@@ -45,6 +45,8 @@ public class GameFlowTests
         var statistics = await player.GetFromJsonAsync<GameStatistics>("/games/statistics");
         var leave = await player.DeleteAsync($"/games/{game.Id}/players/me");
         var spotsAfterLeave = await player.GetFromJsonAsync<GameSpots>($"/games/{game.Id}/spots");
+        var changePassword = await player.PutAsJsonAsync("/accounts/me/password", new ChangePasswordRequest("password123", "newpass456"));
+        var deleteAccount = await player.DeleteAsync("/accounts/me");
 
         // assert
         Assert.Equal(HttpStatusCode.OK, join.StatusCode);
@@ -52,5 +54,7 @@ public class GameFlowTests
         Assert.Equal(1, statistics.TotalGames);
         Assert.Equal(HttpStatusCode.OK, leave.StatusCode);
         Assert.Equal(1, spotsAfterLeave.Free);
+        Assert.Equal(HttpStatusCode.OK, changePassword.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, deleteAccount.StatusCode);
     }
 }
