@@ -25,11 +25,11 @@ public class AccountsController : ControllerBase
     private string GetUsername() => User.Identity!.Name!;
 
     [HttpPost]
-    public IActionResult Register(RegisterRequest request)
+    public async Task<IActionResult> Register(RegisterRequest request)
     {
         try
         {
-            var result = _accountService.Register(request.Username, request.Password);
+            var result = await _accountService.RegisterAsync(request.Username, request.Password);
 
             return result switch
             {
@@ -46,9 +46,9 @@ public class AccountsController : ControllerBase
     }
 
     [HttpPost("login")]
-    public IActionResult Login(LoginRequest request)
+    public async Task<IActionResult> Login(LoginRequest request)
     {
-        var token = _authService.Login(request.Username, request.Password);
+        var token = await _authService.LoginAsync(request.Username, request.Password);
         if (token is null)
             return Unauthorized();
 
@@ -67,13 +67,13 @@ public class AccountsController : ControllerBase
 
     [Authorize]
     [HttpPut("me/password")]
-    public IActionResult ChangePassword(ChangePasswordRequest request)
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
     {
         var username = GetUsername();
-        if (!_authService.CheckLogin(username, request.OldPassword))
+        if (!await _authService.CheckLoginAsync(username, request.OldPassword))
             return Unauthorized();
 
-        var result = _accountService.ChangePassword(username, request.NewPassword);
+        var result = await _accountService.ChangePasswordAsync(username, request.NewPassword);
 
         return result switch
         {
@@ -86,9 +86,9 @@ public class AccountsController : ControllerBase
 
     [Authorize]
     [HttpDelete("me")]
-    public IActionResult DeleteAccount()
+    public async Task<IActionResult> DeleteAccount()
     {
-        var result = _accountService.DeleteAccount(GetUsername());
+        var result = await _accountService.DeleteAccountAsync(GetUsername());
 
         return result switch
         {

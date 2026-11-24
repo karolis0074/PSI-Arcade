@@ -5,9 +5,9 @@ namespace SportMatch.API.Services
 {
     public interface IAccountService
     {
-        public RegisterResult Register(string username, string password);
-        public AccountResult ChangePassword(Account? account, string newPassword);
-        public AccountResult ChangePassword(string username, string newPassword);
-        public AccountResult DeleteAccount(string username);
+        public Task<RegisterResult> RegisterAsync(string username, string password);
+        public Task<AccountResult> ChangePasswordAsync(Account? account, string newPassword);
+        public Task<AccountResult> ChangePasswordAsync(string username, string newPassword);
+        public Task<AccountResult> DeleteAccountAsync(string username);
     }
 }

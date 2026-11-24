@@ -16,7 +16,7 @@ public class AccountService : IAccountService
         _cryptService = cryptService;
     }
 
-    public RegisterResult Register(string username, string password)
+    public async Task<RegisterResult> RegisterAsync(string username, string password)
     {
         if (string.IsNullOrWhiteSpace(username))
             throw new InvalidAccountException("Username cannot be empty.");
@@ -29,10 +29,10 @@ public class AccountService : IAccountService
 
         var passwordHash = _cryptService.Hash(password);
         var account = new Account { Username = username, PasswordHash = passwordHash };
-        return _accountRepository.TryAdd(account);
+        return await _accountRepository.TryAddAsync(account);
     }
 
-    public AccountResult ChangePassword(Account? account, string newPassword)
+    public async Task<AccountResult> ChangePasswordAsync(Account? account, string newPassword)
     {
         if (string.IsNullOrWhiteSpace(newPassword))
             return AccountResult.InvalidInput;
@@ -40,23 +40,23 @@ public class AccountService : IAccountService
             return AccountResult.NotFound;
 
         account.PasswordHash = _cryptService.Hash(newPassword);
-        _accountRepository.Update(account);
+        await _accountRepository.UpdateAsync(account);
         return AccountResult.Success;
     }
 
-    public AccountResult ChangePassword(string username, string newPassword)
+    public async Task<AccountResult> ChangePasswordAsync(string username, string newPassword)
     {
-        var account = _accountRepository.GetByUsername(username);
-        return ChangePassword(account, newPassword);
+        var account = await _accountRepository.GetByUsernameAsync(username);
+        return await ChangePasswordAsync(account, newPassword);
     }
 
-    public AccountResult DeleteAccount(string username)
+    public async Task<AccountResult> DeleteAccountAsync(string username)
     {
         // the primary key is now the int Id, so look the account up by username first
-        var account = _accountRepository.GetByUsername(username);
+        var account = await _accountRepository.GetByUsernameAsync(username);
         if (account is null)
             return AccountResult.NotFound;
 
-        return _accountRepository.Delete(account.Id) ? AccountResult.Success : AccountResult.NotFound;
+        return await _accountRepository.DeleteAsync(account.Id) ? AccountResult.Success : AccountResult.NotFound;
     }
 }

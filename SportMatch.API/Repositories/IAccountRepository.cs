@@ -5,7 +5,9 @@ namespace SportMatch.API.Repositories
 {
     public interface IAccountRepository : IRepository<Account>
     {
-        Account? GetByUsername(string username);
-        RegisterResult TryAdd(Account account);
+        Task<Account?> GetByUsernameAsync(string username);
+        Task<RegisterResult> TryAddAsync(Account account);
+        Task UpdateAsync(Account account);
+        Task<bool> DeleteAsync(int id);
     }
 }
