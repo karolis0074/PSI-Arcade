@@ -1,11 +1,8 @@
 ﻿using SportMatch.API.Models;
 
-namespace SportMatch.API.Repositories
+namespace SportMatch.API.Repositories;
+
+// AddAsync, GetByIdAsync, GetAllAsync, UpdateAsync and DeleteAsync come from IRepository<Game>
+public interface IGameRepository : IRepository<Game>
 {
-    public interface IGameRepository : IRepository<Game>
-    {
-        Task<List<Game>> GetAllAsync();
-        Task<Game?> GetByIdAsync(int id);
-        Task<Game> AddAsync(Game game);
-    }
 }

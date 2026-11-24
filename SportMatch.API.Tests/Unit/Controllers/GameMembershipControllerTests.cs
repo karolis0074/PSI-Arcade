@@ -33,7 +33,7 @@ public class GameMembershipControllerTests
     // ---------- Join ----------
 
     [Fact]
-    public void Join_ServiceReturnsSuccess_ReturnsOkWithGame()
+    public async Task Join_ServiceReturnsSuccess_ReturnsOkWithGame()
     {
         // arrange
         _service.Result = MembershipResult.Success;
@@ -41,7 +41,7 @@ public class GameMembershipControllerTests
         var controller = CreateController("jonas");
 
         // act
-        var result = controller.Join(GameId);
+        var result = await controller.Join(GameId);
 
         // assert
         var ok = Assert.IsType<OkObjectResult>(result);
@@ -49,13 +49,13 @@ public class GameMembershipControllerTests
     }
 
     [Fact]
-    public void Join_LoggedInUser_PassesUsernameAndGameIdToService()
+    public async Task Join_LoggedInUser_PassesUsernameAndGameIdToService()
     {
         // arrange
         var controller = CreateController("jonas");
 
         // act
-        controller.Join(GameId);
+        await controller.Join(GameId);
 
         // assert
         Assert.Equal("jonas", _service.LastUsername);
@@ -63,14 +63,14 @@ public class GameMembershipControllerTests
     }
 
     [Fact]
-    public void Join_ServiceReturnsGameNotFound_ReturnsNotFoundWithMessage()
+    public async Task Join_ServiceReturnsGameNotFound_ReturnsNotFoundWithMessage()
     {
         // arrange
         _service.Result = MembershipResult.GameNotFound;
         var controller = CreateController("jonas");
 
         // act
-        var result = controller.Join(GameId);
+        var result = await controller.Join(GameId);
 
         // assert
         var notFound = Assert.IsType<NotFoundObjectResult>(result);
@@ -78,14 +78,14 @@ public class GameMembershipControllerTests
     }
 
     [Fact]
-    public void Join_ServiceReturnsGameFull_ReturnsBadRequestWithMessage()
+    public async Task Join_ServiceReturnsGameFull_ReturnsBadRequestWithMessage()
     {
         // arrange
         _service.Result = MembershipResult.GameFull;
         var controller = CreateController("jonas");
 
         // act
-        var result = controller.Join(GameId);
+        var result = await controller.Join(GameId);
 
         // assert
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -95,7 +95,7 @@ public class GameMembershipControllerTests
     // ---------- Leave ----------
 
     [Fact]
-    public void Leave_ServiceReturnsSuccess_ReturnsOkWithGame()
+    public async Task Leave_ServiceReturnsSuccess_ReturnsOkWithGame()
     {
         // arrange
         _service.Result = MembershipResult.Success;
@@ -103,7 +103,7 @@ public class GameMembershipControllerTests
         var controller = CreateController("jonas");
 
         // act
-        var result = controller.Leave(GameId);
+        var result = await controller.Leave(GameId);
 
         // assert
         var ok = Assert.IsType<OkObjectResult>(result);
@@ -111,13 +111,13 @@ public class GameMembershipControllerTests
     }
 
     [Fact]
-    public void Leave_LoggedInUser_PassesUsernameAndGameIdToService()
+    public async Task Leave_LoggedInUser_PassesUsernameAndGameIdToService()
     {
         // arrange
         var controller = CreateController("jonas");
 
         // act
-        controller.Leave(GameId);
+        await controller.Leave(GameId);
 
         // assert
         Assert.Equal("jonas", _service.LastUsername);
@@ -125,14 +125,14 @@ public class GameMembershipControllerTests
     }
 
     [Fact]
-    public void Leave_ServiceReturnsGameNotFound_ReturnsNotFoundWithMessage()
+    public async Task Leave_ServiceReturnsGameNotFound_ReturnsNotFoundWithMessage()
     {
         // arrange
         _service.Result = MembershipResult.GameNotFound;
         var controller = CreateController("jonas");
 
         // act
-        var result = controller.Leave(GameId);
+        var result = await controller.Leave(GameId);
 
         // assert
         var notFound = Assert.IsType<NotFoundObjectResult>(result);
@@ -140,14 +140,14 @@ public class GameMembershipControllerTests
     }
 
     [Fact]
-    public void Leave_ServiceReturnsHostCannotLeave_ReturnsBadRequestWithMessage()
+    public async Task Leave_ServiceReturnsHostCannotLeave_ReturnsBadRequestWithMessage()
     {
         // arrange
         _service.Result = MembershipResult.HostCannotLeave;
         var controller = CreateController("host");
 
         // act
-        var result = controller.Leave(GameId);
+        var result = await controller.Leave(GameId);
 
         // assert
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -157,7 +157,7 @@ public class GameMembershipControllerTests
     // ---------- GetSpots ----------
 
     [Fact]
-    public void GetSpots_ServiceReturnsSpots_ReturnsOkWithSpots()
+    public async Task GetSpots_ServiceReturnsSpots_ReturnsOkWithSpots()
     {
         // arrange
         var spots = new GameSpots();
@@ -168,7 +168,7 @@ public class GameMembershipControllerTests
         var controller = CreateController("jonas");
 
         // act
-        var result = controller.GetSpots(GameId);
+        var result = await controller.GetSpots(GameId);
 
         // assert
         var ok = Assert.IsType<OkObjectResult>(result);
@@ -177,14 +177,14 @@ public class GameMembershipControllerTests
     }
 
     [Fact]
-    public void GetSpots_ServiceReturnsNull_ReturnsNotFoundWithMessage()
+    public async Task GetSpots_ServiceReturnsNull_ReturnsNotFoundWithMessage()
     {
         // arrange
         _service.Spots = null;
         var controller = CreateController("jonas");
 
         // act
-        var result = controller.GetSpots(GameId);
+        var result = await controller.GetSpots(GameId);
 
         // assert
         var notFound = Assert.IsType<NotFoundObjectResult>(result);

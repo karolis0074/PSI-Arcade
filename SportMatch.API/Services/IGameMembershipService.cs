@@ -2,15 +2,13 @@
 using SportMatch.API.Models;
 using SportMatch.API.Results;
 
-namespace SportMatch.API.Services
+namespace SportMatch.API.Services;
+
+public interface IGameMembershipService
 {
-    public interface IGameMembershipService
-    {
-        public Game? GetGame(int gameId);
-        public int GetFreeSpots(Game game);
-        public GameSpots? GetSpots(int gameId);
-        public MembershipResult Join(int gameId, string username);
-        public MembershipResult Leave(int gameId, string username);
-        public MembershipResult Kick(int gameId, string hostUsername, string username);
-    }
+    Task<Game?> GetGameAsync(int gameId);
+    Task<GameSpots?> GetSpotsAsync(int gameId);
+    Task<MembershipResult> JoinAsync(int gameId, string username);
+    Task<MembershipResult> LeaveAsync(int gameId, string username);
+    Task<MembershipResult> KickAsync(int gameId, string hostUsername, string username);
 }

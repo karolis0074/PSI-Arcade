@@ -16,5 +16,6 @@ public class GameStatisticsController : ControllerBase
 
     // GET /games/statistics
     [HttpGet("statistics")]
-    public IActionResult GetStatistics() => Ok(_statisticsService.GetOverview());
+    public async Task<IActionResult> GetStatistics() =>
+        Ok(await _statisticsService.GetOverviewAsync());
 }

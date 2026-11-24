@@ -39,70 +39,70 @@ public class GameMembershipServiceTests
     // ---------- Join ----------
 
     [Fact]
-    public void Join_GameDoesNotExist_ReturnsGameNotFound()
+    public async Task Join_GameDoesNotExist_ReturnsGameNotFound()
     {
         // act
-        var result = _service.Join(MissingGameId, "jonas");
+        var result = await _service.JoinAsync(MissingGameId, "jonas");
 
         // assert
         Assert.Equal(MembershipResult.GameNotFound, result);
     }
 
     [Fact]
-    public void Join_GameAlreadyStarted_ReturnsGameStarted()
+    public async Task Join_GameAlreadyStarted_ReturnsGameStarted()
     {
         // arrange
         var game = AddGame(maxPlayers: 4);
         game.StartTime = _clock.UtcNow.AddHours(-1);
 
         // act
-        var result = _service.Join(game.Id, "jonas");
+        var result = await _service.JoinAsync(game.Id, "jonas");
 
         // assert
         Assert.Equal(MembershipResult.GameStarted, result);
-        Assert.DoesNotContain("jonas", _service.GetGame(game.Id)!.JoinedUsernames);
+        Assert.DoesNotContain("jonas", (await _service.GetGameAsync(game.Id))!.JoinedUsernames);
     }
 
     [Fact]
-    public void Join_UserAlreadyJoined_ReturnsAlreadyJoined()
+    public async Task Join_UserAlreadyJoined_ReturnsAlreadyJoined()
     {
         // arrange
         var game = AddGame(maxPlayers: 4);
 
         // act
-        var result = _service.Join(game.Id, "host");
+        var result = await _service.JoinAsync(game.Id, "host");
 
         // assert
         Assert.Equal(MembershipResult.AlreadyJoined, result);
-        Assert.Single(_service.GetGame(game.Id)!.JoinedUsernames);
+        Assert.Single((await _service.GetGameAsync(game.Id))!.JoinedUsernames);
     }
 
     [Fact]
-    public void Join_GameIsFull_ReturnsGameFull()
+    public async Task Join_GameIsFull_ReturnsGameFull()
     {
         // arrange
         var game = AddGame(maxPlayers: 1);    // host takes the only spot
 
         // act
-        var result = _service.Join(game.Id, "jonas");
+        var result = await _service.JoinAsync(game.Id, "jonas");
 
         // assert
         Assert.Equal(MembershipResult.GameFull, result);
-        Assert.DoesNotContain("jonas", _service.GetGame(game.Id)!.JoinedUsernames);
+        Assert.DoesNotContain("jonas", (await _service.GetGameAsync(game.Id))!.JoinedUsernames);
     }
 
     [Fact]
-    public void Join_LastFreeSpot_AddsUserAndGameBecomesFull()
+    public async Task Join_LastFreeSpot_AddsUserAndGameBecomesFull()
     {
         // arrange
         var game = AddGame(maxPlayers: 2);
 
         // act
-        var result = _service.Join(game.Id, "jonas");
+        var result = await _service.JoinAsync(game.Id, "jonas");
 
         // assert
         Assert.Equal(MembershipResult.Success, result);
-        var savedGame = _service.GetGame(game.Id)!;
+        var savedGame = (await _service.GetGameAsync(game.Id))!;
         Assert.Contains("jonas", savedGame.JoinedUsernames);
         Assert.Equal(GameStatus.Full, savedGame.Status);
     }
@@ -110,71 +110,71 @@ public class GameMembershipServiceTests
     // ---------- Leave ----------
 
     [Fact]
-    public void Leave_GameDoesNotExist_ReturnsGameNotFound()
+    public async Task Leave_GameDoesNotExist_ReturnsGameNotFound()
     {
         // act
-        var result = _service.Leave(MissingGameId, "jonas");
+        var result = await _service.LeaveAsync(MissingGameId, "jonas");
 
         // assert
         Assert.Equal(MembershipResult.GameNotFound, result);
     }
 
     [Fact]
-    public void Leave_GameAlreadyStarted_ReturnsGameStarted()
+    public async Task Leave_GameAlreadyStarted_ReturnsGameStarted()
     {
         // arrange
         var game = AddGame(maxPlayers: 4);
-        _service.Join(game.Id, "jonas");
+        await _service.JoinAsync(game.Id, "jonas");
         game.StartTime = _clock.UtcNow.AddHours(-1);
 
         // act
-        var result = _service.Leave(game.Id, "jonas");
+        var result = await _service.LeaveAsync(game.Id, "jonas");
 
         // assert
         Assert.Equal(MembershipResult.GameStarted, result);
-        Assert.Contains("jonas", _service.GetGame(game.Id)!.JoinedUsernames);
+        Assert.Contains("jonas", (await _service.GetGameAsync(game.Id))!.JoinedUsernames);
     }
 
     [Fact]
-    public void Leave_UserNotJoined_ReturnsNotJoined()
+    public async Task Leave_UserNotJoined_ReturnsNotJoined()
     {
         // arrange
         var game = AddGame(maxPlayers: 4);
 
         // act
-        var result = _service.Leave(game.Id, "jonas");
+        var result = await _service.LeaveAsync(game.Id, "jonas");
 
         // assert
         Assert.Equal(MembershipResult.NotJoined, result);
     }
 
     [Fact]
-    public void Leave_UserIsHost_ReturnsHostCannotLeave()
+    public async Task Leave_UserIsHost_ReturnsHostCannotLeave()
     {
         // arrange
         var game = AddGame(maxPlayers: 4);
 
         // act
-        var result = _service.Leave(game.Id, "host");
+        var result = await _service.LeaveAsync(game.Id, "host");
 
         // assert
         Assert.Equal(MembershipResult.HostCannotLeave, result);
-        Assert.Contains("host", _service.GetGame(game.Id)!.JoinedUsernames);
+        Assert.Contains("host", (await _service.GetGameAsync(game.Id))!.JoinedUsernames);
     }
 
     [Fact]
-    public void Leave_JoinedUser_RemovesUserAndGameIsOpenAgain()
+    public async Task Leave_JoinedUser_RemovesUserAndGameIsOpenAgain()
     {
         // arrange
         var game = AddGame(maxPlayers: 2);
-        _service.Join(game.Id, "jonas");    // now the game is full
+        await _service.JoinAsync(game.Id, "jonas");    // now the game is full
 
         // act
-        var result = _service.Leave(game.Id, "jonas");
+        var result = await _service.LeaveAsync(game.Id, "jonas");
 
         // assert
         Assert.Equal(MembershipResult.Success, result);
-        var savedGame = _service.GetGame(game.Id)!;
+        var savedGame = (await _service.GetGameAsync(game.Id))!;
         Assert.DoesNotContain("jonas", savedGame.JoinedUsernames);
         Assert.Equal(GameStatus.Open, savedGame.Status);
     }
@@ -182,83 +182,83 @@ public class GameMembershipServiceTests
     // ---------- Kick ----------
 
     [Fact]
-    public void Kick_HostKicksPlayer_ReturnsSuccess()
+    public async Task Kick_HostKicksPlayer_ReturnsSuccess()
     {
         // arrange
         var game = AddGame(maxPlayers: 4);
-        _service.Join(game.Id, "jonas");
+        await _service.JoinAsync(game.Id, "jonas");
 
         // act
-        var result = _service.Kick(game.Id, "host", "jonas");
+        var result = await _service.KickAsync(game.Id, "host", "jonas");
 
         // assert
         Assert.Equal(MembershipResult.Success, result);
-        Assert.DoesNotContain("jonas", _service.GetGame(game.Id)!.JoinedUsernames);
+        Assert.DoesNotContain("jonas", (await _service.GetGameAsync(game.Id))!.JoinedUsernames);
     }
 
     [Fact]
-    public void Kick_GameDoesNotExist_ReturnsGameNotFound()
+    public async Task Kick_GameDoesNotExist_ReturnsGameNotFound()
     {
         // act
-        var result = _service.Kick(MissingGameId, "host", "jonas");
+        var result = await _service.KickAsync(MissingGameId, "host", "jonas");
 
         // assert
         Assert.Equal(MembershipResult.GameNotFound, result);
     }
 
     [Fact]
-    public void Kick_NotHost_ReturnsNotHost()
+    public async Task Kick_NotHost_ReturnsNotHost()
     {
         // arrange
         var game = AddGame(maxPlayers: 4);
-        _service.Join(game.Id, "jonas");
-        _service.Join(game.Id, "petras");
+        await _service.JoinAsync(game.Id, "jonas");
+        await _service.JoinAsync(game.Id, "petras");
 
         // act
-        var result = _service.Kick(game.Id, "petras", "jonas");
+        var result = await _service.KickAsync(game.Id, "petras", "jonas");
 
         // assert
         Assert.Equal(MembershipResult.NotHost, result);
-        Assert.Contains("jonas", _service.GetGame(game.Id)!.JoinedUsernames);
+        Assert.Contains("jonas", (await _service.GetGameAsync(game.Id))!.JoinedUsernames);
     }
 
     [Fact]
-    public void Kick_GameAlreadyStarted_ReturnsGameStarted()
+    public async Task Kick_GameAlreadyStarted_ReturnsGameStarted()
     {
         // arrange
         var game = AddGame(maxPlayers: 4);
-        _service.Join(game.Id, "jonas");
+        await _service.JoinAsync(game.Id, "jonas");
         game.StartTime = _clock.UtcNow.AddHours(-1);
 
         // act
-        var result = _service.Kick(game.Id, "host", "jonas");
+        var result = await _service.KickAsync(game.Id, "host", "jonas");
 
         // assert
         Assert.Equal(MembershipResult.GameStarted, result);
-        Assert.Contains("jonas", _service.GetGame(game.Id)!.JoinedUsernames);
+        Assert.Contains("jonas", (await _service.GetGameAsync(game.Id))!.JoinedUsernames);
     }
 
     [Fact]
-    public void Kick_HostKicksHimself_ReturnsCannotKickHost()
+    public async Task Kick_HostKicksHimself_ReturnsCannotKickHost()
     {
         // arrange
         var game = AddGame(maxPlayers: 4);
 
         // act
-        var result = _service.Kick(game.Id, "host", "host");
+        var result = await _service.KickAsync(game.Id, "host", "host");
 
         // assert
         Assert.Equal(MembershipResult.CannotKickHost, result);
     }
 
     [Fact]
-    public void Kick_UserNotInGame_ReturnsNotJoined()
+    public async Task Kick_UserNotInGame_ReturnsNotJoined()
     {
         // arrange
         var game = AddGame(maxPlayers: 4);
 
         // act
-        var result = _service.Kick(game.Id, "host", "jonas");
+        var result = await _service.KickAsync(game.Id, "host", "jonas");
 
         // assert
         Assert.Equal(MembershipResult.NotJoined, result);
@@ -267,13 +267,13 @@ public class GameMembershipServiceTests
     // ---------- GetSpots ----------
 
     [Fact]
-    public void GetSpots_GameExists_ReturnsJoinedMaxAndFree()
+    public async Task GetSpots_GameExists_ReturnsJoinedMaxAndFree()
     {
         // arrange
         var game = AddGame(maxPlayers: 10);
 
         // act
-        var spots = _service.GetSpots(game.Id);
+        var spots = await _service.GetSpotsAsync(game.Id);
 
         // assert
         Assert.NotNull(spots);
@@ -283,10 +283,10 @@ public class GameMembershipServiceTests
     }
 
     [Fact]
-    public void GetSpots_GameDoesNotExist_ReturnsNull()
+    public async Task GetSpots_GameDoesNotExist_ReturnsNull()
     {
         // act
-        var spots = _service.GetSpots(MissingGameId);
+        var spots = await _service.GetSpotsAsync(MissingGameId);
 
         // assert
         Assert.Null(spots);

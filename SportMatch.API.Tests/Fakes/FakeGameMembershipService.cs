@@ -9,52 +9,52 @@ namespace SportMatch.API.Tests.Fakes;
 // it just returns what the test sets and remembers what the controller sent
 public class FakeGameMembershipService : IGameMembershipService
 {
-    // what Join, Leave and Kick return
+    // what JoinAsync, LeaveAsync and KickAsync return
     public MembershipResult Result { get; set; } = MembershipResult.Success;
 
-    // what GetGame and GetSpots return
+    // what GetGameAsync and GetSpotsAsync return
     public Game? Game { get; set; }
     public GameSpots? Spots { get; set; }
 
-    // what the controller passed to Join, Leave or Kick
+    // what the controller passed to JoinAsync, LeaveAsync or KickAsync
     public int LastGameId { get; private set; }
     public string? LastUsername { get; private set; }
 
     // returns the game only when the controller asked for the right id
-    public Game? GetGame(int gameId)
+    public Task<Game?> GetGameAsync(int gameId)
     {
         if (Game is not null && Game.Id == gameId)
-            return Game;
+            return Task.FromResult<Game?>(Game);
 
-        return null;
+        return Task.FromResult<Game?>(null);
     }
 
     public int GetFreeSpots(Game game) => game.MaxPlayers - game.JoinedUsernames.Count;
 
-    public GameSpots? GetSpots(int gameId)
+    public Task<GameSpots?> GetSpotsAsync(int gameId)
     {
         LastGameId = gameId;
-        return Spots;
+        return Task.FromResult(Spots);
     }
 
-    public MembershipResult Join(int gameId, string username)
+    public Task<MembershipResult> JoinAsync(int gameId, string username)
     {
         LastGameId = gameId;
         LastUsername = username;
-        return Result;
+        return Task.FromResult(Result);
     }
 
-    public MembershipResult Leave(int gameId, string username)
+    public Task<MembershipResult> LeaveAsync(int gameId, string username)
     {
         LastGameId = gameId;
         LastUsername = username;
-        return Result;
+        return Task.FromResult(Result);
     }
 
-    public MembershipResult Kick(int gameId, string hostUsername, string username)
+    public Task<MembershipResult> KickAsync(int gameId, string hostUsername, string username)
     {
         LastGameId = gameId;
         LastUsername = username;
-        return Result;
+        return Task.FromResult(Result);
     }
 }

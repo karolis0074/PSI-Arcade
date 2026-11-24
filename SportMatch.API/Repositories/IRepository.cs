@@ -5,11 +5,11 @@ namespace SportMatch.API.Repositories;
 
 public interface IRepository<T> where T : BaseEntity
 {
-    T Add(T entity);
-    T? GetById(int id);
-    IReadOnlyList<T> GetAll();
-    IReadOnlyList<T> GetAllOrderedBy<TKey>(Expression<Func<T, TKey>> keySelector)
+    Task<T> AddAsync(T entity);
+    Task<T?> GetByIdAsync(int id);
+    Task<IReadOnlyList<T>> GetAllAsync();
+    Task<IReadOnlyList<T>> GetAllOrderedByAsync<TKey>(Expression<Func<T, TKey>> keySelector)
         where TKey : IComparable;
-    void Update(T entity);
-    bool Delete(int id);
+    Task UpdateAsync(T entity);
+    Task<bool> DeleteAsync(int id);
 }

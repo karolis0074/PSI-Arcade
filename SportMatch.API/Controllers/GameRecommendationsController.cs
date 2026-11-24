@@ -20,7 +20,7 @@ public class GameRecommendationsController : ControllerBase
     // GET /games/recommended?lat=54.68&lng=25.28
     [Authorize]
     [HttpGet("recommended")]
-    public IActionResult GetRecommended([FromQuery] double? lat, [FromQuery] double? lng)
+    public async Task<IActionResult> GetRecommended([FromQuery] double? lat, [FromQuery] double? lng)
     {
         if ((lat is null) != (lng is null))
             return BadRequest("Both lat and lng are required");
@@ -28,6 +28,6 @@ public class GameRecommendationsController : ControllerBase
         if (lat is < -90 or > 90 || lng is < -180 or > 180)
             return BadRequest("Invalid location");
 
-        return Ok(_recommendationService.GetRecommended(GetUsername(), lat, lng));
+        return Ok(await _recommendationService.GetRecommendedAsync(GetUsername(), lat, lng));
     }
 }

@@ -29,12 +29,12 @@ public class GameRecommendationsControllerTests
     }
 
     [Fact]
-    public void GetRecommended_WithLocation_ReturnsOkAndPassesUserAndLocation()
+    public async Task GetRecommended_WithLocation_ReturnsOkAndPassesUserAndLocation()
     {
         _service.Result.Add(new RecommendedGame(new Game { Id = 1 }, 1.5, 0.8));
         var controller = CreateController("jonas");
 
-        var result = controller.GetRecommended(54.68, 25.28);
+        var result = await controller.GetRecommended(54.68, 25.28);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         var games = Assert.IsAssignableFrom<IReadOnlyList<RecommendedGame>>(ok.Value);
@@ -45,11 +45,11 @@ public class GameRecommendationsControllerTests
     }
 
     [Fact]
-    public void GetRecommended_WithoutLocation_ReturnsOkAndPassesNoLocation()
+    public async Task GetRecommended_WithoutLocation_ReturnsOkAndPassesNoLocation()
     {
         var controller = CreateController("jonas");
 
-        var result = controller.GetRecommended(null, null);
+        var result = await controller.GetRecommended(null, null);
 
         Assert.IsType<OkObjectResult>(result);
         Assert.True(_service.WasCalled);
@@ -60,11 +60,11 @@ public class GameRecommendationsControllerTests
     [Theory]
     [InlineData(54.68, null)]
     [InlineData(null, 25.28)]
-    public void GetRecommended_OnlyOneCoordinate_ReturnsBadRequest(double? lat, double? lng)
+    public async Task GetRecommended_OnlyOneCoordinate_ReturnsBadRequest(double? lat, double? lng)
     {
         var controller = CreateController("jonas");
 
-        var result = controller.GetRecommended(lat, lng);
+        var result = await controller.GetRecommended(lat, lng);
 
         Assert.IsType<BadRequestObjectResult>(result);
         Assert.False(_service.WasCalled);
@@ -75,11 +75,11 @@ public class GameRecommendationsControllerTests
     [InlineData(-91.0, 25.28)]
     [InlineData(54.68, 181.0)]
     [InlineData(54.68, -181.0)]
-    public void GetRecommended_LocationOutOfRange_ReturnsBadRequest(double lat, double lng)
+    public async Task GetRecommended_LocationOutOfRange_ReturnsBadRequest(double lat, double lng)
     {
         var controller = CreateController("jonas");
 
-        var result = controller.GetRecommended(lat, lng);
+        var result = await controller.GetRecommended(lat, lng);
 
         Assert.IsType<BadRequestObjectResult>(result);
         Assert.False(_service.WasCalled);

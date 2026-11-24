@@ -30,11 +30,13 @@ public class GameRecommendationService : IGameRecommendationService
     }
 
     // upcoming games that are not full and the user is not in, best score first
-    public IReadOnlyList<RecommendedGame> GetRecommended(string username, double? latitude = null, double? longitude = null)
+    public async Task<IReadOnlyList<RecommendedGame>> GetRecommendedAsync(string username, double? latitude = null, double? longitude = null)
     {
         var now = _clock.UtcNow;
-        var games = _gameRepository.GetAll();
-        var fields = _sportFieldRepository.GetAll().ToDictionary(field => field.Id);
+
+        // the only I/O: load games and fields from the database, everything below is calculation in memory
+        var games = await _gameRepository.GetAllAsync();
+        var fields = (await _sportFieldRepository.GetAllAsync()).ToDictionary(field => field.Id);
         bool hasLocation = latitude is not null && longitude is not null;
 
         var gamesPerField = games
