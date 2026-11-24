@@ -179,6 +179,91 @@ public class GameMembershipServiceTests
         Assert.Equal(GameStatus.Open, savedGame.Status);
     }
 
+    // ---------- Kick ----------
+
+    [Fact]
+    public async Task Kick_HostKicksPlayer_ReturnsSuccess()
+    {
+        // arrange
+        var game = AddGame(maxPlayers: 4);
+        await _service.JoinAsync(game.Id, "jonas");
+
+        // act
+        var result = await _service.KickAsync(game.Id, "host", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.Success, result);
+        Assert.DoesNotContain("jonas", (await _service.GetGameAsync(game.Id))!.JoinedUsernames);
+    }
+
+    [Fact]
+    public async Task Kick_GameDoesNotExist_ReturnsGameNotFound()
+    {
+        // act
+        var result = await _service.KickAsync(MissingGameId, "host", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.GameNotFound, result);
+    }
+
+    [Fact]
+    public async Task Kick_NotHost_ReturnsNotHost()
+    {
+        // arrange
+        var game = AddGame(maxPlayers: 4);
+        await _service.JoinAsync(game.Id, "jonas");
+        await _service.JoinAsync(game.Id, "petras");
+
+        // act
+        var result = await _service.KickAsync(game.Id, "petras", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.NotHost, result);
+        Assert.Contains("jonas", (await _service.GetGameAsync(game.Id))!.JoinedUsernames);
+    }
+
+    [Fact]
+    public async Task Kick_GameAlreadyStarted_ReturnsGameStarted()
+    {
+        // arrange
+        var game = AddGame(maxPlayers: 4);
+        await _service.JoinAsync(game.Id, "jonas");
+        game.StartTime = _clock.UtcNow.AddHours(-1);
+
+        // act
+        var result = await _service.KickAsync(game.Id, "host", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.GameStarted, result);
+        Assert.Contains("jonas", (await _service.GetGameAsync(game.Id))!.JoinedUsernames);
+    }
+
+    [Fact]
+    public async Task Kick_HostKicksHimself_ReturnsCannotKickHost()
+    {
+        // arrange
+        var game = AddGame(maxPlayers: 4);
+
+        // act
+        var result = await _service.KickAsync(game.Id, "host", "host");
+
+        // assert
+        Assert.Equal(MembershipResult.CannotKickHost, result);
+    }
+
+    [Fact]
+    public async Task Kick_UserNotInGame_ReturnsNotJoined()
+    {
+        // arrange
+        var game = AddGame(maxPlayers: 4);
+
+        // act
+        var result = await _service.KickAsync(game.Id, "host", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.NotJoined, result);
+    }
+
     // ---------- GetSpots ----------
 
     [Fact]

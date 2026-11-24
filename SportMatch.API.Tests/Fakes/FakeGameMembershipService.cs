@@ -9,14 +9,14 @@ namespace SportMatch.API.Tests.Fakes;
 // it just returns what the test sets and remembers what the controller sent
 public class FakeGameMembershipService : IGameMembershipService
 {
-    // what JoinAsync and LeaveAsync return
+    // what JoinAsync, LeaveAsync and KickAsync return
     public MembershipResult Result { get; set; } = MembershipResult.Success;
 
     // what GetGameAsync and GetSpotsAsync return
     public Game? Game { get; set; }
     public GameSpots? Spots { get; set; }
 
-    // what the controller passed to JoinAsync or LeaveAsync
+    // what the controller passed to JoinAsync, LeaveAsync or KickAsync
     public int LastGameId { get; private set; }
     public string? LastUsername { get; private set; }
 
@@ -45,6 +45,13 @@ public class FakeGameMembershipService : IGameMembershipService
     }
 
     public Task<MembershipResult> LeaveAsync(int gameId, string username)
+    {
+        LastGameId = gameId;
+        LastUsername = username;
+        return Task.FromResult(Result);
+    }
+
+    public Task<MembershipResult> KickAsync(int gameId, string hostUsername, string username)
     {
         LastGameId = gameId;
         LastUsername = username;

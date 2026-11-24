@@ -75,4 +75,33 @@ public class GameMembershipService : IGameMembershipService
 
         return MembershipResult.Success;
     }
+
+    public async Task<MembershipResult> KickAsync(int gameId, string hostUsername, string username)
+    {
+        var game = await _gameRepository.GetByIdAsync(gameId);
+
+        if (game is null)
+            return MembershipResult.GameNotFound;
+
+        // only the host can kick players
+        if (!game.CreatedByUsername.Equals(hostUsername, StringComparison.OrdinalIgnoreCase))
+            return MembershipResult.NotHost;
+
+        // can't kick players from a game that already started
+        if (game.StartTime <= _clock.UtcNow)
+            return MembershipResult.GameStarted;
+
+        // host can't kick himself, otherwise the game would be left without a host
+        if (game.CreatedByUsername.Equals(username, StringComparison.OrdinalIgnoreCase))
+            return MembershipResult.CannotKickHost;
+
+        if (!game.JoinedUsernames.Contains(username, StringComparer.OrdinalIgnoreCase))
+            return MembershipResult.NotJoined;
+
+        game.JoinedUsernames.RemoveAll(u => u.Equals(username, StringComparison.OrdinalIgnoreCase));
+        game.UpdateStatus();
+        await _gameRepository.UpdateAsync(game);
+
+        return MembershipResult.Success;
+    }
 }

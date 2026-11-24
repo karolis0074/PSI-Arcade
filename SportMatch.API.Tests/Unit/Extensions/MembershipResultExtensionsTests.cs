@@ -14,6 +14,8 @@ public class MembershipResultExtensionsTests
     [InlineData(MembershipResult.GameFull, "Game is full")]
     [InlineData(MembershipResult.NotJoined, "User is not in this game")]
     [InlineData(MembershipResult.HostCannotLeave, "Host cannot leave the game")]
+    [InlineData(MembershipResult.NotHost, "Only the host can kick players")]
+    [InlineData(MembershipResult.CannotKickHost, "Host cannot be kicked")]
     public void ToMessage_ReturnsMessageForResult(MembershipResult result, string expected)
     {
         // act

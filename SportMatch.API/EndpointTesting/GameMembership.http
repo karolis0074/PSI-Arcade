@@ -40,6 +40,29 @@ Authorization: Bearer {{loginOther.response.body.$.token}}
 DELETE {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players/me
 Authorization: Bearer {{loginOther.response.body.$.token}}
 
+### Join again, so the host can kick
+POST {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players
+Authorization: Bearer {{loginOther.response.body.$.token}}
+
+### Kick a player as NOT the host (expect 403)
+DELETE {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players/karolis123
+Authorization: Bearer {{loginOther.response.body.$.token}}
+
+### Kick a player as the host (expect 200)
+DELETE {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players/armandas
+Authorization: Bearer {{login.response.body.$.token}}
+
+### TEST: host kicks himself (expect 400, "Host cannot be kicked")
+DELETE {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players/karolis123
+Authorization: Bearer {{login.response.body.$.token}}
+
+### TEST: kick a user who is not in the game (expect 400)
+DELETE {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players/nobody
+Authorization: Bearer {{login.response.body.$.token}}
+
+### TEST: kick without token (expect 401)
+DELETE {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players/armandas
+
 ### TEST: join without token (expect 401)
 POST {{SportMatch_HostAddress}}/games/{{create.response.body.$.id}}/players
 

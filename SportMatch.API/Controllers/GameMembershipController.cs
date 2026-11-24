@@ -50,6 +50,23 @@ public class GameMembershipController : ControllerBase
         return Ok(await _membership.GetGameAsync(id));
     }
 
+    // DELETE /games/1/players/jonas
+    // ("/players/me" above is a fixed route, so it always goes to Leave, not here)
+    [Authorize]
+    [HttpDelete("{id:int}/players/{username}")]
+    public async Task<IActionResult> Kick(int id, string username)
+    {
+        var result = await _membership.KickAsync(id, GetUsername(), username);
+
+        return result switch
+        {
+            MembershipResult.Success => Ok(await _membership.GetGameAsync(id)),
+            MembershipResult.GameNotFound => NotFound(result.ToMessage()),
+            MembershipResult.NotHost => Forbid(),   // 403
+            _ => BadRequest(result.ToMessage())
+        };
+    }
+
     // GET /games/1/spots
     [HttpGet("{id:int}/spots")]
     public async Task<IActionResult> GetSpots(int id)

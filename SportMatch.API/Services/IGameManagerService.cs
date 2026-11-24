@@ -1,11 +1,21 @@
-﻿using SportMatch.API.DataTransferObjects.Responses;
+﻿using SportMatch.API.DataTransferObjects.Requests;
 using SportMatch.API.Models;
 using SportMatch.API.Results;
+
 namespace SportMatch.API.Services;
-public interface IGameMembershipService
+
+public interface IGameManagerService
 {
-    Task<Game?> GetGameAsync(int gameId);
-    Task<GameSpots?> GetSpotsAsync(int gameId);
-    Task<MembershipResult> JoinAsync(int gameId, string username);
-    Task<MembershipResult> LeaveAsync(int gameId, string username);
+    Task<IReadOnlyList<Game>> GetAllAsync();
+    Task<Game?> GetByIdAsync(int id);
+    Task<CreateGameResult> CreateAsync(string username, CreateGameRequest request);
+    Task<DeleteGameResult> DeleteAsync(int id, string username);
+
+    // these two only read an already loaded Game, so they stay synchronous
+    string GetHostUsername(Game game);
+    bool IsHost(string username, Game game);
+
+    // these two load the game from the database first
+    Task<string?> GetHostUsernameAsync(int id);
+    Task<bool> IsHostAsync(string username, int gameId);
 }
