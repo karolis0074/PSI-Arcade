@@ -24,7 +24,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]
+                ?? throw new InvalidOperationException("Jwt:Key is not configured. See README-jwt-setup.pdf")))
     };
 });
 builder.Services.AddAuthorization();
@@ -33,7 +34,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// repositories
+// repositories (scoped: a new one for every request, together with its own DbContext)
 builder.Services.AddScoped<ISportFieldRepository, SportFieldRepository>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
@@ -47,6 +48,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<ICryptService, CryptService>();
 builder.Services.AddSingleton<IClock, SystemClock>();
 
+// singleton: one shared instance for all requests, so its state must be thread-safe
+builder.Services.AddSingleton<ILiveMetricsService, LiveMetricsService>();
+
 // dependencies of CryptService, injected instead of created with new
 builder.Services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
 builder.Services.AddSingleton<JwtSecurityTokenHandler>();
@@ -58,10 +62,11 @@ try
     using var scope = app.Services.CreateScope();
 
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
 
-    // creating the repository runs SeedIfEmpty(), which can throw SportFieldDataException
-    scope.ServiceProvider.GetRequiredService<ISportFieldRepository>();
+    // SeedIfEmptyAsync() can throw SportFieldDataException
+    var sportFields = scope.ServiceProvider.GetRequiredService<ISportFieldRepository>();
+    await sportFields.SeedIfEmptyAsync();
 }
 catch (SportFieldDataException ex)
 {
@@ -75,8 +80,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseAuthentication();
+app.UseMiddleware<ActivityMiddleware>();   // after authentication, so the user is already known
 app.UseAuthorization();
+
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
