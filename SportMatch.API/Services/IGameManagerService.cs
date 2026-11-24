@@ -1,18 +1,11 @@
-﻿using SportMatch.API.DataTransferObjects.Requests;
+﻿using SportMatch.API.DataTransferObjects.Responses;
 using SportMatch.API.Models;
 using SportMatch.API.Results;
-
-namespace SportMatch.API.Services
+namespace SportMatch.API.Services;
+public interface IGameMembershipService
 {
-    public interface IGameManagerService
-    {
-        public IReadOnlyList<Game> GetAll();
-        public Game? GetById(int id);
-        public CreateGameResult Create(string username, CreateGameRequest request);
-        public DeleteGameResult Delete(int id, string username);
-        public string? GetHostUsername(Game game);
-        public string? GetHostUsername(int id);
-        public bool IsHost(string username, Game game);
-        public bool IsHost(string username, int gameId);
-    }
+    Task<Game?> GetGameAsync(int gameId);
+    Task<GameSpots?> GetSpotsAsync(int gameId);
+    Task<MembershipResult> JoinAsync(int gameId, string username);
+    Task<MembershipResult> LeaveAsync(int gameId, string username);
 }

@@ -9,7 +9,7 @@ namespace SportMatch.API.Tests;
 public class GameMembershipServiceTests
 {
     // adds a game that starts tomorrow, so it is not started yet
-    private static Game AddGame(AppDbContext dbContext, int maxPlayers)
+    private static async Task<Game> AddGameAsync(AppDbContext dbContext, int maxPlayers)
     {
         var game = new Game
         {
@@ -20,54 +20,54 @@ public class GameMembershipServiceTests
         };
 
         dbContext.Games.Add(game);
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync();
 
         return game;
     }
 
     [Fact]
-    public void Join_GameHasFreeSpot_ReturnsSuccess()
+    public async Task Join_GameHasFreeSpot_ReturnsSuccess()
     {
         // arrange
-        var dbContext = TestDatabase.Create();
-        var game = AddGame(dbContext, maxPlayers: 2);
+        var dbContext = await TestDatabase.CreateAsync();
+        var game = await AddGameAsync(dbContext, maxPlayers: 2);
         var service = new GameMembershipService(new GameRepository(dbContext), new SystemClock());
 
         // act
-        var result = service.Join(game.Id, "jonas");
+        var result = await service.JoinAsync(game.Id, "jonas");
 
         // assert
         Assert.Equal(MembershipResult.Success, result);
-        Assert.Contains("jonas", service.GetGame(game.Id)!.JoinedUsernames);
+        Assert.Contains("jonas", (await service.GetGameAsync(game.Id))!.JoinedUsernames);
     }
 
     [Fact]
-    public void Join_GameIsFull_ReturnsGameFull()
+    public async Task Join_GameIsFull_ReturnsGameFull()
     {
         // arrange
-        var dbContext = TestDatabase.Create();
-        var game = AddGame(dbContext, maxPlayers: 1);
+        var dbContext = await TestDatabase.CreateAsync();
+        var game = await AddGameAsync(dbContext, maxPlayers: 1);
         var service = new GameMembershipService(new GameRepository(dbContext), new SystemClock());
-        service.Join(game.Id, "petras");    // first player takes the only spot
+        await service.JoinAsync(game.Id, "petras");    // first player takes the only spot
 
         // act
-        var result = service.Join(game.Id, "jonas");
+        var result = await service.JoinAsync(game.Id, "jonas");
 
         // assert
         Assert.Equal(MembershipResult.GameFull, result);
-        Assert.DoesNotContain("jonas", service.GetGame(game.Id)!.JoinedUsernames);
+        Assert.DoesNotContain("jonas", (await service.GetGameAsync(game.Id))!.JoinedUsernames);
     }
 
     [Fact]
-    public void Leave_UserNotJoined_ReturnsNotJoined()
+    public async Task Leave_UserNotJoined_ReturnsNotJoined()
     {
         // arrange
-        var dbContext = TestDatabase.Create();
-        var game = AddGame(dbContext, maxPlayers: 2);
+        var dbContext = await TestDatabase.CreateAsync();
+        var game = await AddGameAsync(dbContext, maxPlayers: 2);
         var service = new GameMembershipService(new GameRepository(dbContext), new SystemClock());
 
         // act
-        var result = service.Leave(game.Id, "jonas");
+        var result = await service.LeaveAsync(game.Id, "jonas");
 
         // assert
         Assert.Equal(MembershipResult.NotJoined, result);

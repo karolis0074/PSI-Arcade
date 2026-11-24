@@ -1,13 +1,10 @@
 ﻿using SportMatch.API.Models;
 using SportMatch.API.Results;
-
-namespace SportMatch.API.Services
+namespace SportMatch.API.Services;
+public interface IAccountService
 {
-    public interface IAccountService
-    {
-        public RegisterResult Register(string username, string password);
-        public AccountResult ChangePassword(Account? account, string newPassword);
-        public AccountResult ChangePassword(string username, string newPassword);
-        public AccountResult DeleteAccount(string username);
-    }
+    Task<RegisterResult> RegisterAsync(string username, string password);
+    Task<AccountResult> ChangePasswordAsync(Account? account, string newPassword);
+    Task<AccountResult> ChangePasswordAsync(string username, string newPassword);
+    Task<AccountResult> DeleteAccountAsync(string username);
 }

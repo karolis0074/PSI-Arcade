@@ -79,12 +79,12 @@ public class GamesControllerTests
     // ---------- POST ----------
 
     [Fact]
-    public void Create_ValidRequest_ReturnsCreatedGameHostedByLoggedInUser()
+    public async Task Create_ValidRequest_ReturnsCreatedGameHostedByLoggedInUser()
     {
         var controller = CreateController("petras");
         var request = ValidRequest();
 
-        var result = controller.Create(request);
+        var result = await controller.Create(request);
 
         var created = Assert.IsType<CreatedAtActionResult>(result);
         var game = Assert.IsType<Game>(created.Value);
@@ -95,12 +95,12 @@ public class GamesControllerTests
     }
 
     [Fact]
-    public void Create_ServiceReturnsError_ReturnsBadRequestWithMessage()
+    public async Task Create_ServiceReturnsError_ReturnsBadRequestWithMessage()
     {
         _service.CreateError = "MaxPlayers cannot exceed the field capacity (22)";
         var controller = CreateController("petras");
 
-        var result = controller.Create(ValidRequest());
+        var result = await controller.Create(ValidRequest());
 
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal("MaxPlayers cannot exceed the field capacity (22)", badRequest.Value);
@@ -109,34 +109,34 @@ public class GamesControllerTests
     // ---------- DELETE ----------
 
     [Fact]
-    public void Delete_ServiceReturnsSuccess_ReturnsNoContent()
+    public async Task Delete_ServiceReturnsSuccess_ReturnsNoContent()
     {
         _service.DeleteResult = DeleteGameResult.Success;
         var controller = CreateController("petras");
 
-        var result = controller.Delete(1);
+        var result = await controller.Delete(1);
 
         Assert.IsType<NoContentResult>(result);
     }
 
     [Fact]
-    public void Delete_ServiceReturnsNotHost_ReturnsForbid()
+    public async Task Delete_ServiceReturnsNotHost_ReturnsForbid()
     {
         _service.DeleteResult = DeleteGameResult.NotHost;
         var controller = CreateController("jonas");
 
-        var result = controller.Delete(1);
+        var result = await controller.Delete(1);
 
         Assert.IsType<ForbidResult>(result);
     }
 
     [Fact]
-    public void Delete_ServiceReturnsNotFound_ReturnsNotFound()
+    public async Task Delete_ServiceReturnsNotFound_ReturnsNotFound()
     {
         _service.DeleteResult = DeleteGameResult.NotFound;
         var controller = CreateController("petras");
 
-        var result = controller.Delete(1);
+        var result = await controller.Delete(1);
 
         Assert.IsType<NotFoundResult>(result);
     }

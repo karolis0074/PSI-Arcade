@@ -30,7 +30,7 @@ public class GamesController : ControllerBase
     }
 
     // GET /games/1
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
         var game = await _gameRepository.GetByIdAsync(id);
@@ -45,9 +45,9 @@ public class GamesController : ControllerBase
     // all the rules (start time, field exists, field capacity) live in GameManagerService
     [Authorize]
     [HttpPost]
-    public IActionResult Create(CreateGameRequest request)
+    public async Task<IActionResult> Create(CreateGameRequest request)
     {
-        var result = _gameManagerService.Create(GetUsername(), request);
+        var result = await _gameManagerService.CreateAsync(GetUsername(), request);
 
         if (result.Game is null)
             return BadRequest(result.Error);
@@ -57,10 +57,10 @@ public class GamesController : ControllerBase
 
     // DELETE /games/1
     [Authorize]
-    [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
     {
-        var result = _gameManagerService.Delete(id, GetUsername());
+        var result = await _gameManagerService.DeleteAsync(id, GetUsername());
 
         return result switch
         {

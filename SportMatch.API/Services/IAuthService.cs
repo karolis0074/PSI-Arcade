@@ -1,11 +1,8 @@
 ﻿using SportMatch.API.Models;
-
-namespace SportMatch.API.Services
+namespace SportMatch.API.Services;
+public interface IAuthService
 {
-    public interface IAuthService
-    {
-        public bool CheckLogin(Account account, string password);
-        public bool CheckLogin(string username, string password);
-        public string? Login(string username, string password);
-    }
+    bool CheckLogin(Account? account, string password);
+    Task<bool> CheckLoginAsync(string username, string password);
+    Task<string?> LoginAsync(string username, string password);
 }

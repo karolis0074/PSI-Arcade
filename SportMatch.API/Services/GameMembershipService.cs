@@ -7,7 +7,6 @@ namespace SportMatch.API.Services;
 
 public class GameMembershipService : IGameMembershipService
 {
-    // DI — GameRepository comes through the constructor
     private readonly IGameRepository _gameRepository;
     private readonly IClock _clock;
 
@@ -17,75 +16,62 @@ public class GameMembershipService : IGameMembershipService
         _clock = clock;
     }
 
-    public Game? GetGame(int gameId) => _gameRepository.GetById(gameId);
+    public async Task<Game?> GetGameAsync(int gameId) =>
+        await _gameRepository.GetByIdAsync(gameId);
 
+    // pure calculation on an already loaded game, no await needed
     public int GetFreeSpots(Game game) => game.MaxPlayers - game.JoinedUsernames.Count;
 
-    public GameSpots? GetSpots(int gameId)
+    public async Task<GameSpots?> GetSpotsAsync(int gameId)
     {
-        var game = _gameRepository.GetById(gameId);
-
+        var game = await _gameRepository.GetByIdAsync(gameId);
         if (game is null)
             return null;
 
-        var spots = new GameSpots();
-        spots.Joined = game.JoinedUsernames.Count;
-        spots.Max = game.MaxPlayers;
-        spots.Free = GetFreeSpots(game);
-
-        return spots;
+        return new GameSpots
+        {
+            Joined = game.JoinedUsernames.Count,
+            Max = game.MaxPlayers,
+            Free = GetFreeSpots(game)
+        };
     }
 
-    public MembershipResult Join(int gameId, string username)
+    public async Task<MembershipResult> JoinAsync(int gameId, string username)
     {
-        var game = _gameRepository.GetById(gameId);
+        var game = await _gameRepository.GetByIdAsync(gameId);
 
         if (game is null)
             return MembershipResult.GameNotFound;
-
-        // can't join a game that already started
         if (game.StartTime <= _clock.UtcNow)
             return MembershipResult.GameStarted;
-
-        // user can't join the same game twice
-        if (game.JoinedUsernames.Contains(username))
+        if (game.JoinedUsernames.Contains(username, StringComparer.OrdinalIgnoreCase))
             return MembershipResult.AlreadyJoined;
-
-        // no free spots left
         if (GetFreeSpots(game) <= 0)
             return MembershipResult.GameFull;
 
         game.JoinedUsernames.Add(username);
         game.UpdateStatus();
-
-        _gameRepository.Update(game);
+        await _gameRepository.UpdateAsync(game);
 
         return MembershipResult.Success;
     }
 
-    public MembershipResult Leave(int gameId, string username)
+    public async Task<MembershipResult> LeaveAsync(int gameId, string username)
     {
-        var game = _gameRepository.GetById(gameId);
+        var game = await _gameRepository.GetByIdAsync(gameId);
 
         if (game is null)
             return MembershipResult.GameNotFound;
-
-        // can't leave a game that already started
         if (game.StartTime <= _clock.UtcNow)
             return MembershipResult.GameStarted;
-
-        // user has to be in the game to leave it
-        if (!game.JoinedUsernames.Contains(username))
+        if (!game.JoinedUsernames.Contains(username, StringComparer.OrdinalIgnoreCase))
             return MembershipResult.NotJoined;
-
-        // host can't leave, otherwise the game could be left without players
         if (game.CreatedByUsername.Equals(username, StringComparison.OrdinalIgnoreCase))
             return MembershipResult.HostCannotLeave;
 
-        game.JoinedUsernames.Remove(username);
+        game.JoinedUsernames.RemoveAll(u => u.Equals(username, StringComparison.OrdinalIgnoreCase));
         game.UpdateStatus();
-
-        _gameRepository.Update(game);
+        await _gameRepository.UpdateAsync(game);
 
         return MembershipResult.Success;
     }

@@ -13,9 +13,9 @@ public class GameStatisticsService : IGameStatisticsService
         _gameRepository = gameRepository;
     }
 
-    public GameStatistics GetOverview()
+    public async Task<GameStatistics> GetOverviewAsync()
     {
-        var games = _gameRepository.GetAll();
+        var games = await _gameRepository.GetAllAsync();
 
         var statistics = new GameStatistics();
         statistics.TotalGames = games.Count;

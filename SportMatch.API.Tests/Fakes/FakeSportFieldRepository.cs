@@ -10,34 +10,38 @@ public class FakeSportFieldRepository : ISportFieldRepository
 {
     public List<SportField> Fields { get; } = new();
 
+    // sync helper for arranging tests (e.g. in a constructor, where await is not allowed)
     public SportField Add(SportField entity)
     {
         Fields.Add(entity);
         return entity;
     }
 
-    public SportField? GetById(int id) => Fields.FirstOrDefault(f => f.Id == id);
+    private SportField? Find(int id) => Fields.FirstOrDefault(f => f.Id == id);
 
-    public IReadOnlyList<SportField> GetAll() => Fields;
+    public Task SeedIfEmptyAsync() => Task.CompletedTask;
 
-    public IReadOnlyList<SportField> GetAllOrderedBy<TKey>(Expression<Func<SportField, TKey>> keySelector)
+    public Task<SportField> AddAsync(SportField entity) => Task.FromResult(Add(entity));
+
+    public Task<SportField?> GetByIdAsync(int id) => Task.FromResult(Find(id));
+
+    public Task<IReadOnlyList<SportField>> GetAllAsync() =>
+        Task.FromResult<IReadOnlyList<SportField>>(Fields);
+
+    public Task<IReadOnlyList<SportField>> GetAllOrderedByAsync<TKey>(Expression<Func<SportField, TKey>> keySelector)
         where TKey : IComparable =>
-        Fields.AsQueryable().OrderBy(keySelector).ToList();
+        Task.FromResult<IReadOnlyList<SportField>>(Fields.AsQueryable().OrderBy(keySelector).ToList());
 
-    public Task<IReadOnlyList<SportField>> GetAllAsync() => Task.FromResult<IReadOnlyList<SportField>>(Fields);
+    public Task UpdateAsync(SportField entity) => Task.CompletedTask;
 
-    public Task<SportField?> GetByIdAsync(int id) => Task.FromResult(GetById(id));
-
-    public void Update(SportField entity) { }
-
-    public bool Delete(int id)
+    public Task<bool> DeleteAsync(int id)
     {
-        var field = GetById(id);
-        return field is not null && Fields.Remove(field);
+        var field = Find(id);
+        return Task.FromResult(field is not null && Fields.Remove(field));
     }
 
-    public IReadOnlyList<SportField> Search(string? city = null, string? gameType = null, string? fieldType = null) =>
-        Fields;
+    public Task<IReadOnlyList<SportField>> SearchAsync(string? city = null, string? gameType = null, string? fieldType = null) =>
+        Task.FromResult<IReadOnlyList<SportField>>(Fields);
 
     public IEnumerator<SportField> GetEnumerator() => Fields.GetEnumerator();
 

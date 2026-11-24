@@ -5,7 +5,8 @@ using SportMatch.API.Results;
 
 namespace SportMatch.API.Services;
 
-public class GameManagerService :IGameManagerService
+// creating and deleting games, with all the rules (start time, field exists, field capacity, host only)
+public class GameManagerService : IGameManagerService
 {
     private readonly IGameRepository _gameRepository;
     private readonly ISportFieldRepository _sportFieldRepository;
@@ -18,67 +19,66 @@ public class GameManagerService :IGameManagerService
         _clock = clock;
     }
 
-    // games come back sorted by start time (TKey = DateTime)
-    public IReadOnlyList<Game> GetAll() => _gameRepository.GetAllOrderedBy(g => g.StartTime);
+    public Task<IReadOnlyList<Game>> GetAllAsync() => _gameRepository.GetAllAsync();
 
-    public Game? GetById(int id) => _gameRepository.GetById(id);
+    public Task<Game?> GetByIdAsync(int id) => _gameRepository.GetByIdAsync(id);
 
-    public CreateGameResult Create(string username, CreateGameRequest request)
+    public async Task<CreateGameResult> CreateAsync(string username, CreateGameRequest request)
     {
         if (request.StartTime <= _clock.UtcNow)
             return new CreateGameResult(null, "StartTime must be in the future");
 
-        var field = _sportFieldRepository.GetById(request.FootballFieldId);
+        var field = await _sportFieldRepository.GetByIdAsync(request.FootballFieldId);
         if (field is null)
             return new CreateGameResult(null, "Sport field not found");
 
         if (request.MaxPlayers > field.Capacity)
             return new CreateGameResult(null, $"MaxPlayers cannot exceed the field capacity ({field.Capacity})");
 
+        // host and status come from the server, never from the request body (no over-posting)
         var game = new Game
         {
             FootballFieldId = request.FootballFieldId,
+            CreatedByUsername = username,
             StartTime = request.StartTime,
             MaxPlayers = request.MaxPlayers,
-            CreatedByUsername = username
+            JoinedUsernames = new List<string> { username } // the host plays in their own game
         };
-        game.JoinedUsernames.Add(username);
         game.UpdateStatus();
 
-        return new CreateGameResult(_gameRepository.Add(game), null);
+        await _gameRepository.AddAsync(game);
+        return new CreateGameResult(game, null);
     }
 
-    public DeleteGameResult Delete(int id, string username)
+    public async Task<DeleteGameResult> DeleteAsync(int id, string username)
     {
-        var game = _gameRepository.GetById(id);
-
+        var game = await _gameRepository.GetByIdAsync(id);
         if (game is null)
             return DeleteGameResult.NotFound;
 
         if (!IsHost(username, game))
             return DeleteGameResult.NotHost;
 
-        if (!_gameRepository.Delete(id))
-            return DeleteGameResult.NotFound;
-
-        return DeleteGameResult.Success;
+        // the game can be deleted by another request in the meantime
+        var deleted = await _gameRepository.DeleteAsync(game.Id);
+        return deleted ? DeleteGameResult.Success : DeleteGameResult.NotFound;
     }
 
-    public string? GetHostUsername(Game game) => game?.CreatedByUsername;
+    public string GetHostUsername(Game game) => game.CreatedByUsername;
 
-    public string? GetHostUsername(int id) => GetHostUsername(_gameRepository.GetById(id));
-
-    public bool IsHost(string username, Game game)
+    public async Task<string?> GetHostUsernameAsync(int id)
     {
-        if (username is null || game is null)
-            return false;
-
-        string? hostUsername = GetHostUsername(game);
-        if (hostUsername is null)
-            return false;
-
-        return hostUsername.Equals(username);
+        var game = await _gameRepository.GetByIdAsync(id);
+        return game is null ? null : GetHostUsername(game);
     }
 
-    public bool IsHost(string username, int gameId) => IsHost(username, _gameRepository.GetById(gameId));
+    // usernames are case-insensitive everywhere in the app
+    public bool IsHost(string username, Game game) =>
+        game.CreatedByUsername.Equals(username, StringComparison.OrdinalIgnoreCase);
+
+    public async Task<bool> IsHostAsync(string username, int gameId)
+    {
+        var game = await _gameRepository.GetByIdAsync(gameId);
+        return game is not null && IsHost(username, game);
+    }
 }

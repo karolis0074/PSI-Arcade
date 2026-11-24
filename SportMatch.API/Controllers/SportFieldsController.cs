@@ -22,18 +22,18 @@ public class SportFieldsController : ControllerBase
         [FromQuery] string? gameType = null,
         [FromQuery] string? fieldType = null)
     {
-        return Ok(_sportFieldRepository.Search(city, gameType, fieldType));
+        return Ok(await _sportFieldRepository.SearchAsync(city, gameType, fieldType));
     }
 
     // GET /sportfields/1
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
         var field = await _sportFieldRepository.GetByIdAsync(id);
-        
+
         if (field is null)
             return NotFound();
-            
+
         return Ok(field);
     }
 }
