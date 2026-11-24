@@ -11,5 +11,6 @@ namespace SportMatch.API.Services
         public GameSpots? GetSpots(int gameId);
         public MembershipResult Join(int gameId, string username);
         public MembershipResult Leave(int gameId, string username);
+        public MembershipResult Kick(int gameId, string hostUsername, string username);
     }
 }

@@ -12,12 +12,13 @@ public class AccountsControllerTests
 {
     private readonly FakeAccountService _accountService = new();
     private readonly FakeAuthService _authService = new();
+    private readonly FakeLiveMetricsService _metrics = new();
 
     private AccountsController CreateController(string username)
     {
         var identity = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }, "TestAuth");
 
-        return new AccountsController(_accountService, _authService)
+        return new AccountsController(_accountService, _authService, _metrics)
         {
             ControllerContext = new ControllerContext
             {

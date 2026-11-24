@@ -13,25 +13,23 @@ public class AccountsController : ControllerBase
 {
     private readonly IAccountService _accountService;
     private readonly IAuthService _authService;
+    private readonly ILiveMetricsService _metrics;
 
-    public AccountsController(IAccountService accountService, IAuthService authService)
+    public AccountsController(IAccountService accountService, IAuthService authService, ILiveMetricsService metrics)
     {
         _accountService = accountService;
         _authService = authService;
+        _metrics = metrics;
     }
 
     private string GetUsername() => User.Identity!.Name!;
 
-    // POST /accounts
     [HttpPost]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
         try
         {
-            var result = await _accountService.RegisterAsync(
-                request.Username,
-                request.Password
-            );
+            var result = await _accountService.RegisterAsync(request.Username, request.Password);
 
             return result switch
             {
@@ -43,11 +41,10 @@ public class AccountsController : ControllerBase
         }
         catch (InvalidAccountException ex)
         {
-            return BadRequest(ex.Message); // tells the client what was wrong
+            return BadRequest(ex.Message);
         }
     }
 
-    // POST /accounts/login
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
@@ -55,10 +52,19 @@ public class AccountsController : ControllerBase
         if (token is null)
             return Unauthorized();
 
-        return Ok(new { token }); // returns jwt token
+        _metrics.UserConnected(request.Username);
+
+        return Ok(new { token });
     }
 
-    // PUT /accounts/me/password
+    [Authorize]
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        _metrics.UserDisconnected(GetUsername());
+        return Ok(new { message = "Sėkmingai atsijungta" });
+    }
+
     [Authorize]
     [HttpPut("me/password")]
     public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
@@ -78,7 +84,6 @@ public class AccountsController : ControllerBase
         };
     }
 
-    // DELETE /accounts/me
     [Authorize]
     [HttpDelete("me")]
     public async Task<IActionResult> DeleteAccount()

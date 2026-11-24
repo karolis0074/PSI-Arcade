@@ -8,5 +8,7 @@ public enum MembershipResult
     AlreadyJoined,
     GameFull,
     NotJoined,
-    HostCannotLeave
+    HostCannotLeave,
+    NotHost,
+    CannotKickHost
 }
