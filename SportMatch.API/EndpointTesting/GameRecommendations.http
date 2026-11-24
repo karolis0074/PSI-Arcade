@@ -1,0 +1,29 @@
+@SportMatch_HostAddress = http://localhost:5108
+
+### Login (send first)
+# @name login
+POST {{SportMatch_HostAddress}}/accounts/login
+Content-Type: application/json
+
+{ "username": "karolis123", "password": "test1234" }
+
+### Recommended games near Vilnius center (best score first, with distance)
+GET {{SportMatch_HostAddress}}/games/recommended?lat=54.6872&lng=25.2797
+Authorization: Bearer {{login.response.body.$.token}}
+Accept: application/json
+
+### Recommended games without location (distance is left out of the score)
+GET {{SportMatch_HostAddress}}/games/recommended
+Authorization: Bearer {{login.response.body.$.token}}
+Accept: application/json
+
+### TEST: only lat given (expect 400)
+GET {{SportMatch_HostAddress}}/games/recommended?lat=54.6872
+Authorization: Bearer {{login.response.body.$.token}}
+
+### TEST: location out of range (expect 400)
+GET {{SportMatch_HostAddress}}/games/recommended?lat=100&lng=25.2797
+Authorization: Bearer {{login.response.body.$.token}}
+
+### TEST: without token (expect 401)
+GET {{SportMatch_HostAddress}}/games/recommended?lat=54.6872&lng=25.2797

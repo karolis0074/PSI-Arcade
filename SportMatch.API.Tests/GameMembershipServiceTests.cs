@@ -72,4 +72,54 @@ public class GameMembershipServiceTests
         // assert
         Assert.Equal(MembershipResult.NotJoined, result);
     }
+
+    [Fact]
+    public void Kick_HostKicksPlayer_ReturnsSuccess()
+    {
+        // arrange
+        var dbContext = TestDatabase.Create();
+        var game = AddGame(dbContext, maxPlayers: 2);
+        var service = new GameMembershipService(new GameRepository(dbContext), new SystemClock());
+        service.Join(game.Id, "jonas");
+
+        // act
+        var result = service.Kick(game.Id, "host", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.Success, result);
+        Assert.DoesNotContain("jonas", service.GetGame(game.Id)!.JoinedUsernames);
+    }
+
+    [Fact]
+    public void Kick_NotHost_ReturnsNotHost()
+    {
+        // arrange
+        var dbContext = TestDatabase.Create();
+        var game = AddGame(dbContext, maxPlayers: 3);
+        var service = new GameMembershipService(new GameRepository(dbContext), new SystemClock());
+        service.Join(game.Id, "jonas");
+        service.Join(game.Id, "petras");
+
+        // act
+        var result = service.Kick(game.Id, "petras", "jonas");
+
+        // assert
+        Assert.Equal(MembershipResult.NotHost, result);
+        Assert.Contains("jonas", service.GetGame(game.Id)!.JoinedUsernames);
+    }
+
+    [Fact]
+    public void Kick_HostKicksHimself_ReturnsCannotKickHost()
+    {
+        // arrange
+        var dbContext = TestDatabase.Create();
+        var game = AddGame(dbContext, maxPlayers: 2);
+        var service = new GameMembershipService(new GameRepository(dbContext), new SystemClock());
+
+        // act
+        var result = service.Kick(game.Id, "host", "host");
+
+        // assert
+        Assert.Equal(MembershipResult.CannotKickHost, result);
+    }
 }
