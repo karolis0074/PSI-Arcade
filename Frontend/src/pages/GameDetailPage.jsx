@@ -28,6 +28,8 @@ export default function GameDetailPage({ id }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [membershipBusy, setMembershipBusy] = useState(false);
+  const [kickTarget, setKickTarget] = useState(null);
+  const [kicking, setKicking] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -70,6 +72,22 @@ export default function GameDetailPage({ id }) {
       load();
     } finally {
       setMembershipBusy(false);
+    }
+  }
+
+  async function handleKick(username) {
+    setKicking(true);
+    try {
+      const updated = await gamesApi.kick(id, username);
+      if (updated) setGame(updated);
+      else await load();
+      toast('Žaidėjas išmestas iš žaidimo', 'success');
+    } catch (err) {
+      toast(err.message, 'error');
+      load();
+    } finally {
+      setKicking(false);
+      setKickTarget(null);
     }
   }
 
@@ -174,6 +192,21 @@ export default function GameDetailPage({ id }) {
               <span className="row-label">{u}</span>
               {sameUser(u, host) && <span className="row-value">Šeimininkas</span>}
               {user && sameUser(u, user.username) && !sameUser(u, host) && <span className="row-value">Jūs</span>}
+              {isHost && !started && !sameUser(u, host) &&
+                (kickTarget === u ? (
+                  <span className="row-actions">
+                    <button type="button" className="link" onClick={() => setKickTarget(null)}>
+                      Atšaukti
+                    </button>
+                    <button type="button" className="link link-danger" disabled={kicking} onClick={() => handleKick(u)}>
+                      Patvirtinti
+                    </button>
+                  </span>
+                ) : (
+                  <button type="button" className="link link-danger" onClick={() => setKickTarget(u)}>
+                    Išmesti
+                  </button>
+                ))}
             </div>
           ))
         )}

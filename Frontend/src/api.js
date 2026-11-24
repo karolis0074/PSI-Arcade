@@ -57,6 +57,9 @@ const BACKEND_MESSAGES = {
   'Game is full': 'Žaidimas pilnas.',
   'User is not in this game': 'Jūs nedalyvaujate šiame žaidime.',
   'Host cannot leave the game': 'Šeimininkas negali išeiti iš savo žaidimo.',
+  'Host cannot be kicked': 'Šeimininko išmesti negalima.',
+  'Invalid location': 'Neteisinga vieta.',
+  'Both lat and lng are required': 'Neteisinga vieta.',
 };
 
 // isvercia backend pranesimus su kintama dalimi (pvz. aikstes talpa)
@@ -153,6 +156,8 @@ export const accounts = {
   // prisijungia ir grazina jwt tokena
   login: ({ username, password }) =>
     request('/accounts/login', { method: 'POST', body: { username, password } }),
+  // atsijungia, kad vartotojas nebebutu skaiciuojamas kaip prisijunges
+  logout: () => request('/accounts/logout', { method: 'POST', auth: true }),
   // pakeicia prisijungusio vartotojo rodoma varda
   changeName: ({ newName }) =>
     request('/accounts/changename', { method: 'POST', body: { newName }, auth: true }),
@@ -174,6 +179,8 @@ export const games = {
   getAll: () => request('/games'),
   // grazina viena zaidima pagal id
   get: (id) => request(`/games/${id}`),
+  // grazina statistika: zaidimu skaicius, vidutinis zaideju skaicius, populiariausia aikstele
+  statistics: () => request('/games/statistics'),
   // sukuria nauja zaidima, kurejas tampa seimininku ir automatiskai prisijungia
   create: ({ footballFieldId, startTime, maxPlayers }) =>
     request('/games', {
@@ -192,6 +199,21 @@ export const games = {
   join: (id) => request(`/games/${id}/players`, { method: 'POST', auth: true }),
   // iseina is zaidimo, seimininkas iseiti negali
   leave: (id) => request(`/games/${id}/players/me`, { method: 'DELETE', auth: true }),
+  // rekomenduojami zaidimai pagal bala, atstumas skaiciuojamas jei duota vieta
+  recommended: ({ lat, lng } = {}) => request('/games/recommended', { query: { lat, lng }, auth: true }),
+  // ismeta zaideja is zaidimo, gali tik seimininkas
+  kick: (id, username) =>
+    request(`/games/${id}/players/${encodeURIComponent(username)}`, {
+      method: 'DELETE',
+      auth: true,
+      messages: { 403: 'Išmesti žaidėjus gali tik šeimininkas.' },
+    }),
+};
+
+// gyvos metrikos (/metrics)
+export const metrics = {
+  // grazina kiek vartotoju dabar prisijungusiu
+  activeUsers: () => request('/metrics/active-users', { auth: true }),
 };
 
 // aikstelu endpointai (/sportfields)
