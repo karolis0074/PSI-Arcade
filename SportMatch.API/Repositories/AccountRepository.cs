@@ -6,8 +6,8 @@ using SportMatch.API.Results;
 
 namespace SportMatch.API.Repositories;
 
-// sync GetById, GetAll, Update and Delete are inherited from Repository<Account>.
-// The async methods used by the account services are here.
+// GetByIdAsync, GetAllAsync, UpdateAsync and DeleteAsync are inherited from Repository<Account>.
+// Only the username lookup and the duplicate-checked register stay here.
 public class AccountRepository : Repository<Account>, IAccountRepository
 {
     public AccountRepository(AppDbContext dbContext) : base(dbContext)
@@ -37,22 +37,5 @@ public class AccountRepository : Repository<Account>, IAccountRepository
         }
 
         return RegisterResult.Success;
-    }
-
-    public async Task UpdateAsync(Account account)
-    {
-        _dbContext.Set<Account>().Update(account);
-        await _dbContext.SaveChangesAsync();
-    }
-
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var account = await _dbContext.Set<Account>().FindAsync(id);
-        if (account is null)
-            return false;
-
-        _dbContext.Set<Account>().Remove(account);
-        await _dbContext.SaveChangesAsync();
-        return true;
     }
 }

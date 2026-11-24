@@ -1,7 +1,7 @@
+using SportMatch.API.Exceptions;
 using SportMatch.API.Models;
 using SportMatch.API.Repositories;
 using SportMatch.API.Results;
-using SportMatch.API.Exceptions;
 
 namespace SportMatch.API.Services;
 
@@ -52,7 +52,7 @@ public class AccountService : IAccountService
 
     public async Task<AccountResult> DeleteAccountAsync(string username)
     {
-        // the primary key is now the int Id, so look the account up by username first
+        // the primary key is the int Id, so look the account up by username first
         var account = await _accountRepository.GetByUsernameAsync(username);
         if (account is null)
             return AccountResult.NotFound;

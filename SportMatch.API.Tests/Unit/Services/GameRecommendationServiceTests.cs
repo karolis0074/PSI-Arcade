@@ -52,31 +52,31 @@ public class GameRecommendationServiceTests
     // ---------- which games are recommended ----------
 
     [Fact]
-    public void GetRecommended_NoGames_ReturnsEmptyList()
+    public async Task GetRecommended_NoGames_ReturnsEmptyList()
     {
-        var result = _service.GetRecommended(User);
+        var result = await _service.GetRecommendedAsync(User);
 
         Assert.Empty(result);
     }
 
     [Fact]
-    public void GetRecommended_GameAlreadyStarted_IsNotRecommended()
+    public async Task GetRecommended_GameAlreadyStarted_IsNotRecommended()
     {
         AddField(1);
         AddGame(1, hoursFromNow: -1);
 
-        var result = _service.GetRecommended(User);
+        var result = await _service.GetRecommendedAsync(User);
 
         Assert.Empty(result);
     }
 
     [Fact]
-    public void GetRecommended_GameIsFull_IsNotRecommended()
+    public async Task GetRecommended_GameIsFull_IsNotRecommended()
     {
         AddField(1);
         AddGame(1, maxPlayers: 2, players: new[] { "petras" });
 
-        var result = _service.GetRecommended(User);
+        var result = await _service.GetRecommendedAsync(User);
 
         Assert.Empty(result);
     }
@@ -84,23 +84,23 @@ public class GameRecommendationServiceTests
     [Theory]
     [InlineData("jonas")]
     [InlineData("Jonas")]
-    public void GetRecommended_UserAlreadyInGame_IsNotRecommended(string joinedAs)
+    public async Task GetRecommended_UserAlreadyInGame_IsNotRecommended(string joinedAs)
     {
         AddField(1);
         AddGame(1, players: new[] { joinedAs });
 
-        var result = _service.GetRecommended(User);
+        var result = await _service.GetRecommendedAsync(User);
 
         Assert.Empty(result);
     }
 
     [Fact]
-    public void GetRecommended_UpcomingGameWithFreeSpots_IsRecommended()
+    public async Task GetRecommended_UpcomingGameWithFreeSpots_IsRecommended()
     {
         AddField(1);
         var game = AddGame(1);
 
-        var result = _service.GetRecommended(User);
+        var result = await _service.GetRecommendedAsync(User);
 
         Assert.Equal(game.Id, Assert.Single(result).Game.Id);
     }
@@ -108,47 +108,47 @@ public class GameRecommendationServiceTests
     // ---------- distance ----------
 
     [Fact]
-    public void GetRecommended_WithLocation_CloserFieldComesFirst()
+    public async Task GetRecommended_WithLocation_CloserFieldComesFirst()
     {
         AddField(1, FarAddress);
         AddField(2, NearAddress);
         AddGame(1);
         AddGame(2);
 
-        var result = _service.GetRecommended(User, UserLatitude, UserLongitude);
+        var result = await _service.GetRecommendedAsync(User, UserLatitude, UserLongitude);
 
         Assert.Equal(new[] { 2, 1 }, result.Select(r => r.Game.FootballFieldId));
     }
 
     [Fact]
-    public void GetRecommended_WithLocation_ReturnsDistanceInKilometers()
+    public async Task GetRecommended_WithLocation_ReturnsDistanceInKilometers()
     {
         AddField(1, NearAddress);
         AddGame(1);
 
-        var result = _service.GetRecommended(User, UserLatitude, UserLongitude);
+        var result = await _service.GetRecommendedAsync(User, UserLatitude, UserLongitude);
 
         Assert.Equal(1.11, Assert.Single(result).DistanceKm!.Value, 2);
     }
 
     [Fact]
-    public void GetRecommended_WithoutLocation_DistanceIsNull()
+    public async Task GetRecommended_WithoutLocation_DistanceIsNull()
     {
         AddField(1);
         AddGame(1);
 
-        var result = _service.GetRecommended(User);
+        var result = await _service.GetRecommendedAsync(User);
 
         Assert.Null(Assert.Single(result).DistanceKm);
     }
 
     [Fact]
-    public void GetRecommended_FieldWithoutCoordinates_DistanceIsNullButGameIsRecommended()
+    public async Task GetRecommended_FieldWithoutCoordinates_DistanceIsNullButGameIsRecommended()
     {
         AddField(1, "Gedimino pr. 9");
         AddGame(1);
 
-        var result = _service.GetRecommended(User, UserLatitude, UserLongitude);
+        var result = await _service.GetRecommendedAsync(User, UserLatitude, UserLongitude);
 
         Assert.Null(Assert.Single(result).DistanceKm);
     }
@@ -156,31 +156,31 @@ public class GameRecommendationServiceTests
     // ---------- other criteria ----------
 
     [Fact]
-    public void GetRecommended_SoonerGameComesFirst()
+    public async Task GetRecommended_SoonerGameComesFirst()
     {
         AddField(1);
         AddGame(1, hoursFromNow: 48);
         var sooner = AddGame(1, hoursFromNow: 12);
 
-        var result = _service.GetRecommended(User);
+        var result = await _service.GetRecommendedAsync(User);
 
         Assert.Equal(sooner.Id, result[0].Game.Id);
     }
 
     [Fact]
-    public void GetRecommended_GameWithMoreFreeSpotsComesFirst()
+    public async Task GetRecommended_GameWithMoreFreeSpotsComesFirst()
     {
         AddField(1);
         AddGame(1, players: new[] { "a", "b", "c", "d", "e", "f" });
         var emptier = AddGame(1);
 
-        var result = _service.GetRecommended(User);
+        var result = await _service.GetRecommendedAsync(User);
 
         Assert.Equal(emptier.Id, result[0].Game.Id);
     }
 
     [Fact]
-    public void GetRecommended_GameOnMorePopularFieldComesFirst()
+    public async Task GetRecommended_GameOnMorePopularFieldComesFirst()
     {
         AddField(1);
         AddField(2);
@@ -189,13 +189,13 @@ public class GameRecommendationServiceTests
         AddGame(2);
         AddGame(1);
 
-        var result = _service.GetRecommended(User);
+        var result = await _service.GetRecommendedAsync(User);
 
         Assert.Equal(new[] { 1, 2 }, result.Select(r => r.Game.FootballFieldId));
     }
 
     [Fact]
-    public void GetRecommended_SameSportAsUsersEarlierGamesComesFirst()
+    public async Task GetRecommended_SameSportAsUsersEarlierGamesComesFirst()
     {
         AddField(1, gameType: "Football");
         AddField(2, gameType: "Basketball");
@@ -204,20 +204,20 @@ public class GameRecommendationServiceTests
         AddGame(1);
         AddGame(2);
 
-        var result = _service.GetRecommended(User);
+        var result = await _service.GetRecommendedAsync(User);
 
         Assert.Equal(new[] { 2, 1 }, result.Select(r => r.Game.FootballFieldId));
     }
 
     [Fact]
-    public void GetRecommended_Scores_AreBetweenZeroAndOne()
+    public async Task GetRecommended_Scores_AreBetweenZeroAndOne()
     {
         AddField(1, NearAddress);
         AddField(2, FarAddress, "Basketball");
         AddGame(1, hoursFromNow: 1);
         AddGame(2, hoursFromNow: 500, players: new[] { "a", "b", "c" });
 
-        var result = _service.GetRecommended(User, UserLatitude, UserLongitude);
+        var result = await _service.GetRecommendedAsync(User, UserLatitude, UserLongitude);
 
         Assert.All(result, r => Assert.InRange(r.Score, 0, 1));
     }

@@ -18,14 +18,16 @@ public class FakeGameManagerService : IGameManagerService
     // the result Delete returns
     public DeleteGameResult DeleteResult { get; set; } = DeleteGameResult.Success;
 
-    public IReadOnlyList<Game> GetAll() => _games;
+    public Task<IReadOnlyList<Game>> GetAllAsync() =>
+        Task.FromResult<IReadOnlyList<Game>>(_games);
 
-    public Game? GetById(int id) => _games.FirstOrDefault(g => g.Id == id);
+    public Task<Game?> GetByIdAsync(int id) =>
+        Task.FromResult(_games.FirstOrDefault(g => g.Id == id));
 
-    public CreateGameResult Create(string username, CreateGameRequest request)
+    public Task<CreateGameResult> CreateAsync(string username, CreateGameRequest request)
     {
         if (CreateError is not null)
-            return new CreateGameResult(null, CreateError);
+            return Task.FromResult(new CreateGameResult(null, CreateError));
 
         var game = new Game
         {
@@ -36,13 +38,14 @@ public class FakeGameManagerService : IGameManagerService
             MaxPlayers = request.MaxPlayers
         };
         _games.Add(game);
-        return new CreateGameResult(game, null);
+        return Task.FromResult(new CreateGameResult(game, null));
     }
 
-    public DeleteGameResult Delete(int id, string username) => DeleteResult;
+    public Task<DeleteGameResult> DeleteAsync(int id, string username) => Task.FromResult(DeleteResult);
 
-    public string? GetHostUsername(Game game) => game.CreatedByUsername;
-    public string? GetHostUsername(int id) => GetById(id)?.CreatedByUsername;
+    public string GetHostUsername(Game game) => game.CreatedByUsername;
     public bool IsHost(string username, Game game) => game.CreatedByUsername == username;
-    public bool IsHost(string username, int gameId) => GetHostUsername(gameId) == username;
+
+    public async Task<string?> GetHostUsernameAsync(int id) => (await GetByIdAsync(id))?.CreatedByUsername;
+    public async Task<bool> IsHostAsync(string username, int gameId) => await GetHostUsernameAsync(gameId) == username;
 }

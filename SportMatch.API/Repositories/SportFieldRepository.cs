@@ -1,9 +1,9 @@
-using SportMatch.API.Data;
-using SportMatch.API.Models;
 using System.Collections;
 using System.Text.Json;
-using SportMatch.API.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using SportMatch.API.Data;
+using SportMatch.API.Exceptions;
+using SportMatch.API.Models;
 
 namespace SportMatch.API.Repositories;
 
@@ -11,19 +11,19 @@ public class SportFieldRepository : Repository<SportField>, ISportFieldRepositor
 {
     public SportFieldRepository(AppDbContext dbContext) : base(dbContext)
     {
-        SeedIfEmpty();
     }
 
-    private void SeedIfEmpty()
+    // a constructor can't be async, so seeding is a separate method called once from Program.cs
+    public async Task SeedIfEmptyAsync()
     {
-        if (_dbContext.Set<SportField>().Any())
+        if (await _dbContext.Set<SportField>().AnyAsync())
             return;
 
         try
         {
-            using var stream = File.OpenRead("Data/sportfields.json");
+            await using var stream = File.OpenRead("Data/sportfields.json");
 
-            var fields = JsonSerializer.Deserialize<List<SportField>>(
+            var fields = await JsonSerializer.DeserializeAsync<List<SportField>>(
                 stream,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
@@ -31,7 +31,7 @@ public class SportFieldRepository : Repository<SportField>, ISportFieldRepositor
                 throw new SportFieldDataException("sportfields.json contains no sport fields.");
 
             _dbContext.Set<SportField>().AddRange(fields);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
         catch (FileNotFoundException ex)
         {
@@ -43,13 +43,7 @@ public class SportFieldRepository : Repository<SportField>, ISportFieldRepositor
         }
     }
 
-    public async Task<IReadOnlyList<SportField>> GetAllAsync() => 
-        await _dbContext.SportFields.ToListAsync();
-
-    public async Task<SportField?> GetByIdAsync(int id) => 
-        await _dbContext.SportFields.FirstOrDefaultAsync(f => f.Id == id);
-
-    public IReadOnlyList<SportField> Search(string? city = null, string? gameType = null, string? fieldType = null)
+    public async Task<IReadOnlyList<SportField>> SearchAsync(string? city = null, string? gameType = null, string? fieldType = null)
     {
         var query = _dbContext.Set<SportField>().AsQueryable();
 
@@ -62,9 +56,10 @@ public class SportFieldRepository : Repository<SportField>, ISportFieldRepositor
         if (!string.IsNullOrEmpty(fieldType))
             query = query.Where(f => f.FieldType.ToLower() == fieldType.ToLower());
 
-        return query.ToList();
+        return await query.ToListAsync();
     }
 
+    // IEnumerable<T> is synchronous by design (foreach has no await),
     public IEnumerator<SportField> GetEnumerator() =>
         _dbContext.Set<SportField>().AsEnumerable().GetEnumerator();
 

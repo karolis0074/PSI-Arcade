@@ -4,7 +4,8 @@ using SportMatch.API.Repositories;
 
 namespace SportMatch.API.Tests.Fakes;
 
-// fake repository: keeps games in a simple list instead of a database
+// fake repository: keeps games in a simple list instead of a database.
+// a list answers instantly, so the async methods just wrap the result in Task.FromResult
 public class FakeGameRepository : IGameRepository
 {
     private readonly List<Game> _games = new();
@@ -13,6 +14,7 @@ public class FakeGameRepository : IGameRepository
     // lets a test pretend the database delete failed
     public bool DeleteShouldFail { get; set; }
 
+    // sync helper for arranging tests (e.g. in a constructor, where await is not allowed)
     public Game Add(Game entity)
     {
         if (entity.Id == 0)
@@ -21,28 +23,27 @@ public class FakeGameRepository : IGameRepository
         return entity;
     }
 
-    public Game? GetById(int id) => _games.FirstOrDefault(g => g.Id == id);
+    private Game? Find(int id) => _games.FirstOrDefault(g => g.Id == id);
 
-    public IReadOnlyList<Game> GetAll() => _games;
+    public Task<Game> AddAsync(Game entity) => Task.FromResult(Add(entity));
 
-    public IReadOnlyList<Game> GetAllOrderedBy<TKey>(Expression<Func<Game, TKey>> keySelector)
+    public Task<Game?> GetByIdAsync(int id) => Task.FromResult(Find(id));
+
+    public Task<IReadOnlyList<Game>> GetAllAsync() =>
+        Task.FromResult<IReadOnlyList<Game>>(_games.ToList());
+
+    public Task<IReadOnlyList<Game>> GetAllOrderedByAsync<TKey>(Expression<Func<Game, TKey>> keySelector)
         where TKey : IComparable =>
-        _games.AsQueryable().OrderBy(keySelector).ToList();
+        Task.FromResult<IReadOnlyList<Game>>(_games.AsQueryable().OrderBy(keySelector).ToList());
 
-    public void Update(Game entity) { }
+    public Task UpdateAsync(Game entity) => Task.CompletedTask;
 
-    public bool Delete(int id)
+    public Task<bool> DeleteAsync(int id)
     {
         if (DeleteShouldFail)
-            return false;
+            return Task.FromResult(false);
 
-        var game = GetById(id);
-        return game is not null && _games.Remove(game);
+        var game = Find(id);
+        return Task.FromResult(game is not null && _games.Remove(game));
     }
-
-    public Task<List<Game>> GetAllAsync() => Task.FromResult(_games.ToList());
-
-    public Task<Game?> GetByIdAsync(int id) => Task.FromResult(GetById(id));
-
-    public Task<Game> AddAsync(Game game) => Task.FromResult(Add(game));
 }

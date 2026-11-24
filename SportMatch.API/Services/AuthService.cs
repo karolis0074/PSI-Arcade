@@ -14,15 +14,12 @@ public class AuthService : IAuthService
         _cryptService = cryptService;
     }
 
-    public bool VerifyPassword(Account account, string password)
+    public bool VerifyPassword(Account? account, string password)
     {
         if (account is null || password is null)
             return false;
 
-        if (_cryptService.VerifyHash(password, account.PasswordHash))
-            return true;
-
-        return false;
+        return _cryptService.VerifyHash(password, account.PasswordHash);
     }
 
     public async Task<bool> CheckLoginAsync(string username, string password)

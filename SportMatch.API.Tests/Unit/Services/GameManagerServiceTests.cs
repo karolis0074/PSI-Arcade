@@ -44,14 +44,14 @@ public class GameManagerServiceTests
     // ---------- Create ----------
 
     [Fact]
-    public void Create_ValidRequest_SavesGameWithHostJoined()
+    public async Task Create_ValidRequest_SavesGameWithHostJoined()
     {
         var request = ValidRequest(maxPlayers: 4);
 
-        var result = _service.Create("host", request);
+        var result = await _service.CreateAsync("host", request);
 
         Assert.Null(result.Error);
-        var saved = _service.GetById(result.Game!.Id);
+        var saved = await _service.GetByIdAsync(result.Game!.Id);
         Assert.NotNull(saved);
         Assert.Equal("host", saved!.CreatedByUsername);
         Assert.Equal(FieldId, saved.FootballFieldId);
@@ -62,107 +62,107 @@ public class GameManagerServiceTests
     }
 
     [Fact]
-    public void Create_StartTimeInPast_ReturnsErrorAndDoesNotSave()
+    public async Task Create_StartTimeInPast_ReturnsErrorAndDoesNotSave()
     {
         var request = new CreateGameRequest(FieldId, _clock.UtcNow.AddHours(-1), 4);
 
-        var result = _service.Create("host", request);
+        var result = await _service.CreateAsync("host", request);
 
         Assert.Null(result.Game);
         Assert.Equal("StartTime must be in the future", result.Error);
-        Assert.Empty(_service.GetAll());
+        Assert.Empty(await _service.GetAllAsync());
     }
 
     [Fact]
-    public void Create_StartTimeIsNow_ReturnsErrorAndDoesNotSave()
+    public async Task Create_StartTimeIsNow_ReturnsErrorAndDoesNotSave()
     {
         var request = new CreateGameRequest(FieldId, _clock.UtcNow, 4);
 
-        var result = _service.Create("host", request);
+        var result = await _service.CreateAsync("host", request);
 
         Assert.Null(result.Game);
         Assert.Equal("StartTime must be in the future", result.Error);
-        Assert.Empty(_service.GetAll());
+        Assert.Empty(await _service.GetAllAsync());
     }
 
     [Fact]
-    public void Create_FieldDoesNotExist_ReturnsErrorAndDoesNotSave()
+    public async Task Create_FieldDoesNotExist_ReturnsErrorAndDoesNotSave()
     {
         var request = new CreateGameRequest(999, _clock.UtcNow.AddDays(1), 4);
 
-        var result = _service.Create("host", request);
+        var result = await _service.CreateAsync("host", request);
 
         Assert.Null(result.Game);
         Assert.Equal("Sport field not found", result.Error);
-        Assert.Empty(_service.GetAll());
+        Assert.Empty(await _service.GetAllAsync());
     }
 
     [Fact]
-    public void Create_MaxPlayersOverFieldCapacity_ReturnsErrorAndDoesNotSave()
+    public async Task Create_MaxPlayersOverFieldCapacity_ReturnsErrorAndDoesNotSave()
     {
         var request = ValidRequest(maxPlayers: FieldCapacity + 1);
 
-        var result = _service.Create("host", request);
+        var result = await _service.CreateAsync("host", request);
 
         Assert.Null(result.Game);
         Assert.Equal($"MaxPlayers cannot exceed the field capacity ({FieldCapacity})", result.Error);
-        Assert.Empty(_service.GetAll());
+        Assert.Empty(await _service.GetAllAsync());
     }
 
     [Fact]
-    public void Create_MaxPlayersEqualsFieldCapacity_SavesGame()
+    public async Task Create_MaxPlayersEqualsFieldCapacity_SavesGame()
     {
         var request = ValidRequest(maxPlayers: FieldCapacity);
 
-        var result = _service.Create("host", request);
+        var result = await _service.CreateAsync("host", request);
 
         Assert.Null(result.Error);
-        Assert.NotNull(_service.GetById(result.Game!.Id));
+        Assert.NotNull(await _service.GetByIdAsync(result.Game!.Id));
     }
 
     // ---------- Delete ----------
 
     [Fact]
-    public void Delete_UserIsHost_ReturnsSuccessAndRemovesGame()
+    public async Task Delete_UserIsHost_ReturnsSuccessAndRemovesGame()
     {
         var game = AddGame(host: "host");
 
-        var result = _service.Delete(game.Id, "host");
+        var result = await _service.DeleteAsync(game.Id, "host");
 
         Assert.Equal(DeleteGameResult.Success, result);
-        Assert.Null(_service.GetById(game.Id));
+        Assert.Null(await _service.GetByIdAsync(game.Id));
     }
 
     [Fact]
-    public void Delete_UserIsNotHost_ReturnsNotHostAndKeepsGame()
+    public async Task Delete_UserIsNotHost_ReturnsNotHostAndKeepsGame()
     {
         var game = AddGame(host: "host");
 
-        var result = _service.Delete(game.Id, "jonas");
+        var result = await _service.DeleteAsync(game.Id, "jonas");
 
         Assert.Equal(DeleteGameResult.NotHost, result);
-        Assert.NotNull(_service.GetById(game.Id));
+        Assert.NotNull(await _service.GetByIdAsync(game.Id));
     }
 
     [Fact]
-    public void Delete_GameDoesNotExist_ReturnsNotFound()
+    public async Task Delete_GameDoesNotExist_ReturnsNotFound()
     {
         const int missingId = 999;
 
-        var result = _service.Delete(missingId, "host");
+        var result = await _service.DeleteAsync(missingId, "host");
 
         Assert.Equal(DeleteGameResult.NotFound, result);
     }
 
     [Fact]
-    public void Delete_RepositoryDeleteFails_ReturnsNotFound()
+    public async Task Delete_RepositoryDeleteFails_ReturnsNotFound()
     {
         // the game exists, but another request deletes it first,
         // so deleting it in the database fails (only possible to set up with a fake)
         var game = AddGame(host: "host");
         _gameRepository.DeleteShouldFail = true;
 
-        var result = _service.Delete(game.Id, "host");
+        var result = await _service.DeleteAsync(game.Id, "host");
 
         Assert.Equal(DeleteGameResult.NotFound, result);
     }
@@ -170,11 +170,11 @@ public class GameManagerServiceTests
     // ---------- GetHostUsername ----------
 
     [Fact]
-    public void GetHostUsername_GameExists_ReturnsCreator()
+    public async Task GetHostUsername_GameExists_ReturnsCreator()
     {
         var game = AddGame(host: "host");
 
-        var host = _service.GetHostUsername(game.Id);
+        var host = await _service.GetHostUsernameAsync(game.Id);
 
         Assert.Equal("host", host);
     }
@@ -190,11 +190,11 @@ public class GameManagerServiceTests
     }
 
     [Fact]
-    public void GetHostUsername_GameDoesNotExist_ReturnsNull()
+    public async Task GetHostUsername_GameDoesNotExist_ReturnsNull()
     {
         const int missingId = 999;
 
-        var host = _service.GetHostUsername(missingId);
+        var host = await _service.GetHostUsernameAsync(missingId);
 
         Assert.Null(host);
     }
@@ -204,11 +204,11 @@ public class GameManagerServiceTests
     [Theory]
     [InlineData("host", true)]
     [InlineData("jonas", false)]
-    public void IsHost_GameIdGiven_ReturnsTrueOnlyForCreator(string username, bool expected)
+    public async Task IsHost_GameIdGiven_ReturnsTrueOnlyForCreator(string username, bool expected)
     {
         var game = AddGame(host: "host");
 
-        var isHost = _service.IsHost(username, game.Id);
+        var isHost = await _service.IsHostAsync(username, game.Id);
 
         Assert.Equal(expected, isHost);
     }
@@ -226,21 +226,21 @@ public class GameManagerServiceTests
     }
 
     [Fact]
-    public void IsHost_UsernameIsNull_ReturnsFalse()
+    public async Task IsHost_UsernameIsNull_ReturnsFalse()
     {
         var game = AddGame(host: "host");
 
-        var isHost = _service.IsHost(null!, game.Id);
+        var isHost = await _service.IsHostAsync(null!, game.Id);
 
         Assert.False(isHost);
     }
 
     [Fact]
-    public void IsHost_GameDoesNotExist_ReturnsFalse()
+    public async Task IsHost_GameDoesNotExist_ReturnsFalse()
     {
         const int missingId = 999;
 
-        var isHost = _service.IsHost("host", missingId);
+        var isHost = await _service.IsHostAsync("host", missingId);
 
         Assert.False(isHost);
     }

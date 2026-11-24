@@ -16,28 +16,30 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
+    options.TokenValidationParameters = new TokenValidationParameters  // Jwt:Key and Jwt:Issuer have to be set up in user-secrets
+    {                                                                  // Look at README-jwt-setup.pdf
         ValidateIssuer = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? ""))
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]
+                ?? throw new InvalidOperationException("Jwt:Key is not configured. See README-jwt-setup.pdf")))
     };
 });
 builder.Services.AddAuthorization();
 
+// connection string comes from appsettings.json instead of being hardcoded
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Repositories
+// repositories (scoped: a new one for every request, together with its own DbContext)
 builder.Services.AddScoped<ISportFieldRepository, SportFieldRepository>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 
-// Services
+// services
 builder.Services.AddScoped<IGameMembershipService, GameMembershipService>();
 builder.Services.AddScoped<IGameManagerService, GameManagerService>();
 builder.Services.AddScoped<IGameStatisticsService, GameStatisticsService>();
@@ -45,10 +47,13 @@ builder.Services.AddScoped<IGameRecommendationService, GameRecommendationService
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<ICryptService, CryptService>();
+builder.Services.AddSingleton<IClock, SystemClock>();
+
+// singleton: one shared instance for all requests, so its state must be thread-safe
 builder.Services.AddSingleton<ILiveMetricsService, LiveMetricsService>();
 builder.Services.AddSingleton<IClock, SystemClock>();
 
-// Dependencies
+// dependencies of CryptService, injected instead of created with new
 builder.Services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();
 builder.Services.AddSingleton<JwtSecurityTokenHandler>();
 
@@ -57,9 +62,13 @@ var app = builder.Build();
 try
 {
     using var scope = app.Services.CreateScope();
+
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<ISportFieldRepository>();
+    await db.Database.MigrateAsync();
+
+    // SeedIfEmptyAsync() can throw SportFieldDataException
+    var sportFields = scope.ServiceProvider.GetRequiredService<ISportFieldRepository>();
+    await sportFields.SeedIfEmptyAsync();
 }
 catch (SportFieldDataException ex)
 {
@@ -75,9 +84,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-app.UseMiddleware<ActivityMiddleware>();
+app.UseMiddleware<ActivityMiddleware>();   // after authentication, so the user is already known
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
