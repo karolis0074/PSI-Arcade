@@ -1,6 +1,8 @@
 ﻿using SportMatch.API.Models;
 using SportMatch.API.Results;
+
 namespace SportMatch.API.Services;
+
 public interface IAccountService
 {
     Task<RegisterResult> RegisterAsync(string username, string password);

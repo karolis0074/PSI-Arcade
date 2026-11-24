@@ -51,6 +51,7 @@ builder.Services.AddSingleton<IClock, SystemClock>();
 
 // singleton: one shared instance for all requests, so its state must be thread-safe
 builder.Services.AddSingleton<ILiveMetricsService, LiveMetricsService>();
+builder.Services.AddSingleton<IClock, SystemClock>();
 
 // dependencies of CryptService, injected instead of created with new
 builder.Services.AddSingleton<IPasswordHasher<object>, PasswordHasher<object>>();

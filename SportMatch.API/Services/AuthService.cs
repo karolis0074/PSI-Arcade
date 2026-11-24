@@ -14,7 +14,7 @@ public class AuthService : IAuthService
         _cryptService = cryptService;
     }
 
-    public bool CheckLogin(Account? account, string password)
+    public bool VerifyPassword(Account? account, string password)
     {
         if (account is null || password is null)
             return false;
@@ -25,13 +25,13 @@ public class AuthService : IAuthService
     public async Task<bool> CheckLoginAsync(string username, string password)
     {
         var account = await _accountRepository.GetByUsernameAsync(username);
-        return CheckLogin(account, password);
+        return VerifyPassword(account, password);
     }
 
     public async Task<string?> LoginAsync(string username, string password)
     {
         var account = await _accountRepository.GetByUsernameAsync(username);
-        if (account is null || !CheckLogin(account, password))
+        if (account is null || !VerifyPassword(account, password))
             return null;
 
         return _cryptService.GenerateToken(account);
